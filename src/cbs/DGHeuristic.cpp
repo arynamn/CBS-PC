@@ -1,24 +1,24 @@
 #include "CBSHeuristic.h"
 
-int DGHeuristic::computeInformedHeuristicsValue(CBSNode& curr, double time_limit){
-  int h = -1;
+int DGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
+{
+	int h = -1;
 	int num_of_CGedges;
 	vector<int> HG(num_of_agents * num_of_agents, 0); // heuristic graph
-  if (!buildDependenceGraph(curr, HG, num_of_CGedges))
-    return false;
-  // Minimum Vertex Cover
-  if (curr.parent == nullptr || num_of_CGedges > ILP_edge_threshold ||// root node of CBS tree or the CG is too large
-      target_reasoning || disjoint_splitting) // when we are allowed to replan for multiple agents, the incremental method is not correct any longer.
-    h = minimumVertexCover(HG);
-  else
-    h = minimumVertexCover(HG, curr.parent->h_val, num_of_agents, num_of_CGedges);
-  return h;
+	if (!buildDependenceGraph(curr, HG, num_of_CGedges))
+		return false;
+	// Minimum Vertex Cover
+	if (curr.parent == nullptr || num_of_CGedges > ILP_edge_threshold || // root node of CBS tree or the CG is too large
+		target_reasoning || disjoint_splitting)							 // when we are allowed to replan for multiple agents, the incremental method is not correct any longer.
+		h = minimumVertexCover(HG);
+	else
+		h = minimumVertexCover(HG, curr.parent->h_val, num_of_agents, num_of_CGedges);
+	return h;
 }
 
-
-bool DGHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num_of_CGedges)
+bool DGHeuristic::buildDependenceGraph(CBSNode &node, vector<int> &CG, int &num_of_CGedges)
 {
-	for (auto& conflict : node.conflicts)
+	for (auto &conflict : node.conflicts)
 	{
 		int a1 = min(conflict->a1, conflict->a2);
 		int a2 = max(conflict->a1, conflict->a2);
@@ -47,7 +47,7 @@ bool DGHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num_
 		}
 		if ((clock() - start_time) / CLOCKS_PER_SEC > time_limit) // run out of time
 		{
-			runtime_build_dependency_graph += (double) (clock() - start_time) / CLOCKS_PER_SEC;
+			runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
 			return false;
 		}
 	}
@@ -66,10 +66,9 @@ bool DGHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num_
 			}
 		}
 	}
-	runtime_build_dependency_graph += (double) (clock() - start_time) / CLOCKS_PER_SEC;
+	runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
 	return true;
 }
-
 
 // int DGHeuristic::getEdgeWeight(int a1, int a2, CBSNode& node, bool cardinal)
 // {
@@ -81,7 +80,6 @@ bool DGHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num_
 // 			num_memoization++;
 // 			return got->second;
 // 		}
-
 
 // 	// runtime = (double)(clock() - start) / CLOCKS_PER_SEC;
 // 	if (screen > 2)
@@ -100,17 +98,17 @@ bool DGHeuristic::buildDependenceGraph(CBSNode& node, vector<int>& CG, int& num_
 // 	return rst;
 // }
 
-bool DGHeuristic::dependent(int a1, int a2, CBSNode& node) // return true if the two agents are dependent
+bool DGHeuristic::dependent(int a1, int a2, CBSNode &node) // return true if the two agents are dependent
 {
-	const MDD* mdd1 = mdd_helper.getMDD(node, a1, paths[a1]->size()); // get mdds
-	const MDD* mdd2 = mdd_helper.getMDD(node, a2, paths[a2]->size());
+	const MDD *mdd1 = mdd_helper.getMDD(node, a1, paths[a1]->size()); // get mdds
+	const MDD *mdd2 = mdd_helper.getMDD(node, a2, paths[a2]->size());
 	if (mdd1->levels.size() > mdd2->levels.size()) // swap
 		std::swap(mdd1, mdd2);
 	num_merge_MDDs++;
 	return !SyncMDDs(*mdd1, *mdd2);
 }
 
-bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.levels <= other.levels
+bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD &other) // assume mdd.levels <= other.levels
 {
 	if (other.levels.size() <= 1) // Either of the MDDs was already completely pruned already
 		return false;
@@ -122,11 +120,10 @@ bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.level
 		copy.levels.resize(other.levels.size());
 		for (; i < copy.levels.size(); i++)
 		{
-			SyncMDDNode* parent = copy.levels[i - 1].front();
+			SyncMDDNode *parent = copy.levels[i - 1].front();
 			auto node = new SyncMDDNode(parent->location, parent);
 			parent->children.push_back(node);
 			copy.levels[i].push_back(node);
-
 		}
 	}
 	// Cheaply find the coexisting nodes on level zero - all nodes coexist because agent starting points never collide
@@ -140,16 +137,16 @@ bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.level
 			// Go over all the node's parents and test their coexisting nodes' children for co-existance with this node
 			for (auto parent = (*node)->parents.begin(); parent != (*node)->parents.end(); parent++)
 			{
-				//bool validParent = false;
-				for (const MDDNode* parentCoexistingNode : (*parent)->coexistingNodesFromOtherMdds)
+				// bool validParent = false;
+				for (const MDDNode *parentCoexistingNode : (*parent)->coexistingNodesFromOtherMdds)
 				{
-					for (const MDDNode* childOfParentCoexistingNode : parentCoexistingNode->children)
+					for (const MDDNode *childOfParentCoexistingNode : parentCoexistingNode->children)
 					{
 						if ((*node)->location == childOfParentCoexistingNode->location) // vertex conflict
 							continue;
 						else if ((*node)->location == parentCoexistingNode->location && (*parent)->location == childOfParentCoexistingNode->location) // edge conflict
 							continue;
-						//validParent = true;
+						// validParent = true;
 
 						auto it = (*node)->coexistingNodesFromOtherMdds.cbegin();
 						for (; it != (*node)->coexistingNodesFromOtherMdds.cend(); ++it)
@@ -163,7 +160,7 @@ bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.level
 						}
 					}
 				}
-				//if (!validParent)
+				// if (!validParent)
 				//{
 				//	// delete the edge, and continue up the levels if necessary
 				//	SyncMDDNode* p = *parent;
@@ -171,16 +168,16 @@ bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.level
 				//	p->children.remove((*node));
 				//	if (p->children.empty())
 				//		copy.deleteNode(p);
-				//}
-				//else
+				// }
+				// else
 				//{
 				//	parent++;
-				//}
+				// }
 			}
 			if ((*node)->coexistingNodesFromOtherMdds.empty())
 			{
 				// delete the node, and continue up the levels if necessary
-				SyncMDDNode* p = *node;
+				SyncMDDNode *p = *node;
 				node++;
 				copy.deleteNode(p, i);
 			}
@@ -197,18 +194,17 @@ bool DGHeuristic::SyncMDDs(const MDD &mdd, const MDD& other) // assume mdd.level
 	return true;
 }
 
-void DGHeuristic::copyConflictGraph(CBSNode& child, const CBSNode& parent)
+void DGHeuristic::copyConflictGraph(CBSNode &child, const CBSNode &parent)
 {
-  unordered_set<int> changed;
-  for (const auto& p : child.paths) {
-    changed.insert(p.first);
-  }
-  for (auto e : parent.conflictGraph) {
-    if (changed.find(e.first / num_of_agents) == changed.end() &&
-				changed.find(e.first % num_of_agents) == changed.end())
-      child.conflictGraph[e.first] = e.second;
-
+	unordered_set<int> changed;
+	for (const auto &p : child.paths)
+	{
+		changed.insert(p.first);
+	}
+	for (auto e : parent.conflictGraph)
+	{
+		if (changed.find(e.first / num_of_agents) == changed.end() &&
+			changed.find(e.first % num_of_agents) == changed.end())
+			child.conflictGraph[e.first] = e.second;
 	}
 }
-
-

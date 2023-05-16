@@ -1,16 +1,15 @@
 #include "common.h"
 
-std::ostream& operator<<(std::ostream& os, const Path& path)
+std::ostream &operator<<(std::ostream &os, const Path &path)
 {
-	for (const auto& state : path.path)
+	for (const auto &state : path.path)
 	{
 		os << state.location << "(" << state.is_single() << "),";
 	}
 	return os;
 }
 
-
-bool isSamePath(const Path& p1, const Path& p2)
+bool isSamePath(const Path &p1, const Path &p2)
 {
 	if (p1.size() != p2.size())
 		return false;

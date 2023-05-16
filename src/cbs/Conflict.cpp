@@ -2,11 +2,9 @@
 #include "RectangleReasoning.h"
 #include "MDD.h"
 
-
-std::ostream& operator<<(std::ostream& os, const Constraint& constraint)
+std::ostream &operator<<(std::ostream &os, const Constraint &constraint)
 {
-	os << "<" << std::get<0>(constraint) << "," << std::get<1>(constraint) << "," <<
-	   std::get<2>(constraint) << "," << std::get<3>(constraint) << ",";
+	os << "<" << std::get<0>(constraint) << "," << std::get<1>(constraint) << "," << std::get<2>(constraint) << "," << std::get<3>(constraint) << ",";
 	switch (std::get<4>(constraint))
 	{
 	case constraint_type::VERTEX:
@@ -39,13 +37,14 @@ std::ostream& operator<<(std::ostream& os, const Constraint& constraint)
 	case constraint_type::LEQSTOP:
 		os << "LS";
 		break;
+	default:
+		break;
 	}
 	os << ">";
 	return os;
 }
 
-
-std::ostream& operator<<(std::ostream& os, const Conflict& conflict)
+std::ostream &operator<<(std::ostream &os, const Conflict &conflict)
 {
 	switch (conflict.priority)
 	{
@@ -62,6 +61,8 @@ std::ostream& operator<<(std::ostream& os, const Conflict& conflict)
 		os << "non-cardinal ";
 		break;
 	case conflict_priority::PRIORITY_COUNT:
+		break;
+	default:
 		break;
 	}
 	switch (conflict.type)
@@ -86,6 +87,8 @@ std::ostream& operator<<(std::ostream& os, const Conflict& conflict)
 		break;
 	case conflict_type::TYPE_COUNT:
 		break;
+	default:
+		break;
 	}
 	os << " conflict:  " << conflict.a1 << " with ";
 	for (auto con : conflict.constraint1)
@@ -96,14 +99,13 @@ std::ostream& operator<<(std::ostream& os, const Conflict& conflict)
 	return os;
 }
 
-
 // conflict selection
 // First compare the cardinality: cardinal > semi-cardinal > non-cardinal (This step can be skipped by the user)
 // Second compare the type: mutex > target > corridor > rectangle > vertex/edge
 // Third compare the user-specified tie-breaking rule: RANDOM, EARLIEST, CONFLICTS, MCONSTRAINTS, FCONSTRAINTS, WIDTH, SINGLETONS
 // Last break ties randomly
 // For all the values below, smaller is better
-bool operator<(const Conflict& conflict1, const Conflict& conflict2) // return true if conflict2 has higher priority
+bool operator<(const Conflict &conflict1, const Conflict &conflict2) // return true if conflict2 has higher priority
 {
 	if (conflict1.priority == conflict2.priority)
 	{
@@ -119,4 +121,3 @@ bool operator<(const Conflict& conflict1, const Conflict& conflict2) // return t
 	}
 	return conflict1.priority > conflict2.priority;
 }
-

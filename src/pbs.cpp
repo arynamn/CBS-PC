@@ -1,7 +1,7 @@
 
 /*driver.cpp
-* Solve a MAPF instance on 2D grids.
-*/
+ * Solve a MAPF instance on 2D grids.
+ */
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "PBS.h"
@@ -10,28 +10,17 @@
 static void usage();
 
 /* Main function */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	namespace po = boost::program_options;
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
-	desc.add_options()
-		("help", "produce help message")
+	desc.add_options()("help", "produce help message")
 
 		// params for the input instance and experiment settings
-		("map,m", po::value<string>()->required(), "input file for map")
-		("agents,a", po::value<string>()->required(), "input file for agents")
-		("output,o", po::value<string>(), "output file for schedule")
-		("agentNum,k", po::value<int>()->default_value(0), "number of agents")
-		("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")
-		("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")
-		("seed,d", po::value<int>()->default_value(0), "random seed")
+		("map,m", po::value<string>()->required(), "input file for map")("agents,a", po::value<string>()->required(), "input file for agents")("output,o", po::value<string>(), "output file for schedule")("agentNum,k", po::value<int>()->default_value(0), "number of agents")("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")("seed,d", po::value<int>()->default_value(0), "random seed")
 		// params for instance generators
-		("rows", po::value<int>()->default_value(0), "number of rows")
-		("cols", po::value<int>()->default_value(0), "number of columns")
-		("obs", po::value<int>()->default_value(0), "number of obstacles")
-		("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances")
-		;
+		("rows", po::value<int>()->default_value(0), "number of rows")("cols", po::value<int>()->default_value(0), "number of columns")("obs", po::value<int>()->default_value(0), "number of obstacles")("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -52,8 +41,7 @@ int main(int argc, char** argv)
 		return -1;
 	}*/
 
-  
-	srand((int) time(0));
+	srand((int)time(0));
 
 	///////////////////////////////////////////////////////////////////////////
 	// load the instance
@@ -64,7 +52,7 @@ int main(int argc, char** argv)
 	srand(vm["seed"].as<int>());
 
 	int runs = 1;
-	
+
 	//////////////////////////////////////////////////////////////////////
 	// initialize the solver
 	PBS pbs(instance, vm["screen"].as<int>());
@@ -79,18 +67,16 @@ int main(int argc, char** argv)
 		runtime += pbs.runtime;
 		if (pbs.solution_found)
 			break;
-		min_f_val = (int) pbs.min_f_val;
+		min_f_val = (int)pbs.min_f_val;
 		pbs.randomRoot = true;
 	}
 	pbs.runtime = runtime;
 	if (vm.count("output"))
 		pbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
-  pbs.clearSearchEngines();
+	pbs.clearSearchEngines();
 
 	return 0;
-
 }
-
 
 /*
 Prints out usage help.

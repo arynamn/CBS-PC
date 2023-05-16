@@ -4,18 +4,18 @@
 #include "SpaceTimeAStar.h"
 // #include "SIPP.h"
 
-shared_ptr<Conflict> CorridorReasoning::run(const shared_ptr<Conflict>& conflict,
-											const vector<Path*>& paths,
-											bool cardinal, const CBSNode& node)
+shared_ptr<Conflict> CorridorReasoning::run(const shared_ptr<Conflict> &conflict,
+											const vector<Path *> &paths,
+											bool cardinal, const CBSNode &node)
 {
 	clock_t t = clock();
 	auto corridor = findCorridorConflict(conflict, paths, cardinal, node);
-	accumulated_runtime += (double) (clock() - t) / CLOCKS_PER_SEC;
+	accumulated_runtime += (double)(clock() - t) / CLOCKS_PER_SEC;
 	return corridor;
 }
 
-int CorridorReasoning::findCorridor(const shared_ptr<Conflict>& conflict,
-									const vector<Path*>& paths, int endpoints[], int endpoints_time[]) // return the length of the corridor
+int CorridorReasoning::findCorridor(const shared_ptr<Conflict> &conflict,
+									const vector<Path *> &paths, int endpoints[], int endpoints_time[]) // return the length of the corridor
 {
 	if (paths[conflict->a1]->size() <= 1 || paths[conflict->a2]->size() <= 1)
 		return 0;
@@ -28,33 +28,34 @@ int CorridorReasoning::findCorridor(const shared_ptr<Conflict>& conflict,
 	if (loc1 < 0) // vertex conflict
 	{
 		if (search_engines[0]->instance.getDegree(loc2) != 2)
-			return 0; // not a corridor 
+			return 0; // not a corridor
 		loc1 = loc2;
 	}
 	else // edge conflict
 	{
 		if (search_engines[0]->instance.getDegree(loc1) != 2 && search_engines[0]->instance.getDegree(loc2) != 2)
-			return 0; // not a corridor 	
+			return 0; // not a corridor
 	}
 
-	endpoints_time[0] = getExitingTime(*paths[conflict->a1], t); // the first timestep when agent 1 exits the corridor
-	endpoints_time[1] = getExitingTime(*paths[conflict->a2], t); // the first timestep when agent 2 exits the corridor
+	endpoints_time[0] = getExitingTime(*paths[conflict->a1], t);		// the first timestep when agent 1 exits the corridor
+	endpoints_time[1] = getExitingTime(*paths[conflict->a2], t);		// the first timestep when agent 2 exits the corridor
 	endpoints[0] = paths[conflict->a1]->at(endpoints_time[0]).location; // the exit location for agent 1
 	endpoints[1] = paths[conflict->a2]->at(endpoints_time[1]).location; // the exit location for agent 2
-	if (endpoints[0] == endpoints[1]) // agents exit the corridor in the same direction
+	if (endpoints[0] == endpoints[1])									// agents exit the corridor in the same direction
 		return 0;
 	// count the distance between the two endpoints, and
-	// check whether the corridor between the two exit locations traverse the conflict location, 
+	// check whether the corridor between the two exit locations traverse the conflict location,
 	// which indicates whether the two agents come in different directions
 	int prev = endpoints[0];
 	int curr = paths[conflict->a1]->at(endpoints_time[0] - 1).location;
-	bool traverseTheConflictingLocation = false;
+	// bool traverseTheConflictingLocation = false;
 	int corridor_length = 1;
 	while (curr != endpoints[1])
 	{
-		if (curr == loc2)
-			traverseTheConflictingLocation = true;
+		// if (curr == loc2)
+		// 	traverseTheConflictingLocation = true;
 		auto neighbors = search_engines[0]->instance.getNeighbors(curr);
+		printf("Neighbor test :\n");
 		if (neighbors.size() == 2) // inside the corridor
 		{
 			if (neighbors.front() == prev)
@@ -88,12 +89,11 @@ int CorridorReasoning::findCorridor(const shared_ptr<Conflict>& conflict,
 	return corridor_length;
 }
 
-
-shared_ptr<Conflict> CorridorReasoning::findCorridorConflict(const shared_ptr<Conflict>& conflict,
-															 const vector<Path*>& paths,
-															 bool cardinal, const CBSNode& node)
+shared_ptr<Conflict> CorridorReasoning::findCorridorConflict(const shared_ptr<Conflict> &conflict,
+															 const vector<Path *> &paths,
+															 bool cardinal, const CBSNode &node)
 {
-	int a[2] = { conflict->a1, conflict->a2 };
+	int a[2] = {conflict->a1, conflict->a2};
 	int agent, loc1, loc2, timestep;
 	constraint_type type;
 	tie(agent, loc1, loc2, timestep, type) = conflict->constraint1.back();
@@ -114,8 +114,12 @@ shared_ptr<Conflict> CorridorReasoning::findCorridorConflict(const shared_ptr<Co
 		t[i] = getEnteringTime(*paths[a[i]], *paths[a[1 - i]], timestep);
 	if (t[0] > t[1])
 	{
-		int temp = t[0]; t[0] = t[1]; t[1] = temp;
-		temp = a[0]; a[0] = a[1]; a[1] = temp;
+		int temp = t[0];
+		t[0] = t[1];
+		t[1] = temp;
+		temp = a[0];
+		a[0] = a[1];
+		a[1] = temp;
 	}
 	int u[2];
 	for (int i = 0; i < 2; i++)
@@ -125,7 +129,7 @@ shared_ptr<Conflict> CorridorReasoning::findCorridorConflict(const shared_ptr<Co
 	for (int i = 0; i < 2; i++)
 	{
 		bool found = false;
-		for (int time = t[i]; time < (int) paths[a[i]]->size() && !found; time++)
+		for (int time = t[i]; time < (int)paths[a[i]]->size() && !found; time++)
 		{
 			if (paths[a[i]]->at(time).location == u[1 - i])
 				found = true;
@@ -163,11 +167,10 @@ shared_ptr<Conflict> CorridorReasoning::findCorridorConflict(const shared_ptr<Co
 	return nullptr;
 }
 
-
-int CorridorReasoning::getExitingTime(const Path& path, int t)
+int CorridorReasoning::getExitingTime(const Path &path, int t)
 {
-	if (t >= (int) path.size())
-		t = (int) path.size() - 1;
+	if (t >= (int)path.size())
+		t = (int)path.size() - 1;
 	int loc = path[t].location;
 	while (loc != path.back().location &&
 		   search_engines[0]->instance.getDegree(loc) == 2)
@@ -178,11 +181,10 @@ int CorridorReasoning::getExitingTime(const Path& path, int t)
 	return t;
 }
 
-
-int CorridorReasoning::getEnteringTime(const Path& path, const Path& path2, int t)
+int CorridorReasoning::getEnteringTime(const Path &path, const Path &path2, int t)
 {
-	if (t >= (int) path.size())
-		t = (int) path.size() - 1;
+	if (t >= (int)path.size())
+		t = (int)path.size() - 1;
 	int loc = path[t].location;
 	while (loc != path.front().location && loc != path2.back().location &&
 		   search_engines[0]->instance.getDegree(loc) == 2)
@@ -193,8 +195,7 @@ int CorridorReasoning::getEnteringTime(const Path& path, const Path& path2, int 
 	return t;
 }
 
-
-int CorridorReasoning::getCorridorLength(const Path& path, int t_start, int loc_end, pair<int, int>& edge)
+int CorridorReasoning::getCorridorLength(const Path &path, int t_start, int loc_end, pair<int, int> &edge)
 {
 	int curr = path[t_start].location;
 	int next;
@@ -227,7 +228,6 @@ int CorridorReasoning::getCorridorLength(const Path& path, int t_start, int loc_
 	}
 	return length;
 }
-
 
 /*int getBypassLength(int start, int end, std::pair<int, int> blocked, const bool* my_map, int num_col, int map_size)
 {
@@ -375,7 +375,7 @@ int CorridorReasoning::getBypassLengthBySIPP(int start, int end, pair<int, int> 
 	pairing_heap< SIPPNode*, compare<SIPPNode::compare_node> > open_list;
 	// boost::heap::pairing_heap< AStarNode*, boost::heap::compare<LLNode::compare_node> >::handle_type open_handle;
 	unordered_set<SIPPNode*, SIPPNode::NodeHasher, SIPPNode::eqnode> nodes;
-	
+
 	Interval interval = reservation_table.get_first_safe_interval(start);
 	assert(get<0>(interval) == 0);
 	auto root = new SIPPNode(start, 0, instance.getManhattanDistance(start, end), nullptr, 0, interval);
@@ -436,7 +436,7 @@ int CorridorReasoning::getBypassLengthBySIPP(int start, int end, pair<int, int> 
 }
 */
 
-bool CorridorReasoning::blocked(const Path& path, const Constraint& constraint)
+bool CorridorReasoning::blocked(const Path &path, const Constraint &constraint)
 {
 	int a, loc, t1, t2;
 	constraint_type type;
@@ -444,7 +444,7 @@ bool CorridorReasoning::blocked(const Path& path, const Constraint& constraint)
 	assert(type == constraint_type::RANGE);
 	for (int t = t1; t < t2; t++)
 	{
-		if (t >= (int) path.size() && loc == path.back().location)
+		if (t >= (int)path.size() && loc == path.back().location)
 			return true;
 		else if (t >= 0 && path[t].location == loc)
 			return true;

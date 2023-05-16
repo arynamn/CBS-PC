@@ -1,7 +1,7 @@
 
 /*driver.cpp
-* Solve a MAPF instance on 2D grids.
-*/
+ * Solve a MAPF instance on 2D grids.
+ */
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "CBS.h"
@@ -10,45 +10,31 @@
 static void usage();
 
 /* Main function */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	namespace po = boost::program_options;
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
-	desc.add_options()
-		("help", "produce help message")
+	desc.add_options()("help", "produce help message")
 
 		// params for the input instance and experiment settings
-		("map,m", po::value<string>()->required(), "input file for map")
-		("agents,a", po::value<string>()->required(), "input file for agents")
-		("output,o", po::value<string>(), "output file for schedule")
-		("agentNum,k", po::value<int>()->default_value(0), "number of agents")
-		("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")
-		("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")
-		("seed,d", po::value<int>()->default_value(0), "random seed")
+		("map,m", po::value<string>()->required(), "input file for map")("agents,a", po::value<string>()->required(), "input file for agents")("output,o", po::value<string>(), "output file for schedule")("agentNum,k", po::value<int>()->default_value(0), "number of agents")("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")("seed,d", po::value<int>()->default_value(0), "random seed")
 		// params for instance generators
-		("rows", po::value<int>()->default_value(0), "number of rows")
-		("cols", po::value<int>()->default_value(0), "number of columns")
-		("obs", po::value<int>()->default_value(0), "number of obstacles")
-		("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances")
+		("rows", po::value<int>()->default_value(0), "number of rows")("cols", po::value<int>()->default_value(0), "number of columns")("obs", po::value<int>()->default_value(0), "number of obstacles")("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances")
 
 		// params for CBS
 		("heuristics", po::value<string>()->default_value("CG"), "heuristics for the high-level search (Zero, CG,DG, WDG)")
 		// ("prioritizingConflicts", po::value<bool>()->default_value(false),
-		 // "conflict prioritization. If true, conflictSelection is used as a tie-breaking rule.")
+		// "conflict prioritization. If true, conflictSelection is used as a tie-breaking rule.")
 		("conflictSelection", po::value<string>()->default_value("Random"),
 		 "conflict selection (Random\n Earliest\n Conflicts: most conflicts with others\n MConstraints: most constraints\n "
-   		 "FConstraints: fewest constraints\n Width: thinnest MDDs\n Singletons: most singletons in MDDs)")
-		("nodeSelection", po::value<string>()->default_value("Random"),
-		 "conflict selection (Random\n H: smallest h value\n Depth: depth-first manner\n Conflicts: fewest conflicts\n "
-   		 "ConflictPairs: fewest conflicting pairs of agents\n MVC: MVC on the conflict graph)")
-		("bypass", po::value<bool>()->default_value(false), "Bypass1")
-		("disjointSplitting", po::value<bool>()->default_value(false), "disjoint splitting")
+		 "FConstraints: fewest constraints\n Width: thinnest MDDs\n Singletons: most singletons in MDDs)")("nodeSelection", po::value<string>()->default_value("Random"),
+																										   "conflict selection (Random\n H: smallest h value\n Depth: depth-first manner\n Conflicts: fewest conflicts\n "
+																										   "ConflictPairs: fewest conflicting pairs of agents\n MVC: MVC on the conflict graph)")("bypass", po::value<bool>()->default_value(false), "Bypass1")("disjointSplitting", po::value<bool>()->default_value(false), "disjoint splitting")
 		// ("rectangleReasoning", po::value<bool>()->default_value(false), "Using rectangle reasoning")
 		// ("corridorReasoning", po::value<bool>()->default_value(false), "Using corridor reasoning")
 		// ("mutexReasoning", po::value<string>()->default_value("None"), "Using mutex reasoning (C, None)")
-		("targetReasoning", po::value<bool>()->default_value(false), "Using target reasoning")
-		("restart", po::value<int>()->default_value(1), "number of restart times (at least 1)")
+		("targetReasoning", po::value<bool>()->default_value(false), "Using target reasoning")("restart", po::value<int>()->default_value(1), "number of restart times (at least 1)")
 		// ("sipp", po::value<bool>()->default_value(false), "using sipp as the single agent solver")
 		;
 
@@ -132,8 +118,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-  
-	srand((int) time(0));
+	srand((int)time(0));
 
 	///////////////////////////////////////////////////////////////////////////
 	// load the instance
@@ -144,7 +129,7 @@ int main(int argc, char** argv)
 	srand(vm["seed"].as<int>());
 
 	int runs = vm["restart"].as<int>();
-	
+
 	//////////////////////////////////////////////////////////////////////
 	// initialize the solver
 	CBS cbs(instance, false, h, vm["screen"].as<int>());
@@ -154,7 +139,7 @@ int main(int argc, char** argv)
 	cbs.setConflictSelectionRule(conflict);
 	cbs.setNodeSelectionRule(n);
 
-  // Functions below are not supported right now
+	// Functions below are not supported right now
 	cbs.setPrioritizeConflicts(false);
 	cbs.setRectangleReasoning(false);
 	cbs.setCorridorReasoning(false);
@@ -170,18 +155,16 @@ int main(int argc, char** argv)
 		runtime += cbs.runtime;
 		if (cbs.solution_found)
 			break;
-		min_f_val = (int) cbs.min_f_val;
+		min_f_val = (int)cbs.min_f_val;
 		cbs.randomRoot = true;
 	}
 	cbs.runtime = runtime;
 	if (vm.count("output"))
 		cbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
-  cbs.clearSearchEngines();
+	cbs.clearSearchEngines();
 
 	return 0;
-
 }
-
 
 /*
 Prints out usage help.

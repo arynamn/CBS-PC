@@ -5,21 +5,19 @@
 
 using namespace std;
 
-IPMutexPropagation::IPMutexPropagation(MDD* MDD_0, MDD* MDD_1,
-									   SingleAgentSolver* se_0, SingleAgentSolver* se_1,
+IPMutexPropagation::IPMutexPropagation(MDD *MDD_0, MDD *MDD_1,
+									   SingleAgentSolver *se_0, SingleAgentSolver *se_1,
 									   ConstraintTable cons_0,
 									   ConstraintTable cons_1,
-									   int incr_limit
-) :
-		MDD_0(MDD_0), MDD_1(MDD_1), init_len_0(MDD_0->levels.size()), init_len_1(MDD_1->levels.size()),
-		incr_limit(incr_limit), search_engine_0(se_0), search_engine_1(se_1), cons_0(cons_0), cons_1(cons_1)
+									   int incr_limit) : MDD_0(MDD_0), MDD_1(MDD_1), init_len_0(MDD_0->levels.size()), init_len_1(MDD_1->levels.size()),
+														 incr_limit(incr_limit), search_engine_0(se_0), search_engine_1(se_1), cons_0(cons_0), cons_1(cons_1)
 {
 }
 
 std::pair<con_vec, con_vec> IPMutexPropagation::gen_constraints()
 {
 	/* similar to pairwise ICTS */
-	ConstraintPropagation cp({ MDD_0, MDD_1 });
+	ConstraintPropagation cp({MDD_0, MDD_1});
 
 	cp.init_mutex();
 	cp.fwd_mutex_prop();
@@ -73,7 +71,6 @@ std::pair<con_vec, con_vec> IPMutexPropagation::gen_constraints()
 				// cout << init_len_0 + max(inc_0 - 1, 0) + max(inc_len - 1, 0) - 1 << " " << init_len_1 + max(inc_len - 1, 0) - 1 << endl;
 				return cp.generate_constraints(init_len_0 + max(inc_0 - 1, 0) + max(inc_len - 1, 0) - 1,
 											   init_len_1 + max(inc_len - 1, 0) - 1);
-
 			}
 			else
 			{
@@ -93,7 +90,6 @@ std::pair<con_vec, con_vec> IPMutexPropagation::gen_constraints()
 				// cout << "increasing a1 " << inc_1 << endl;
 				return cp.generate_constraints(init_len_0 + max(inc_len - 1, 0) - 1,
 											   init_len_1 + max(inc_1 - 1, 0) + max(inc_len - 1, 0) - 1);
-
 			}
 		}
 	}

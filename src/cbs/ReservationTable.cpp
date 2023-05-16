@@ -1,16 +1,15 @@
 #include "ReservationTable.h"
 
-
 /*int ReservationTable::get_holding_time(int location)
-{ 
+{
 	auto it = constraints.find(location);
 	if (it != constraints.end())
 	{
 		for (auto constraint : it->second)
 			insert_constraint(location, constraint.first, constraint.second);
 	}
-	
-	if (RT.find(location) == RT.end()) 
+
+	if (RT.find(location) == RT.end())
 	{
 		return 0;
 	}
@@ -27,9 +26,8 @@
 	return t;
 }*/
 
-
 // build the constraint table and the conflict avoidance table
-void ReservationTable::buildCAT(int agent, const vector<Path*>& paths)
+void ReservationTable::buildCAT(int agent, const vector<Path *> &paths)
 {
 	for (size_t ag = 0; ag < paths.size(); ag++)
 	{
@@ -47,7 +45,7 @@ void ReservationTable::buildCAT(int agent, const vector<Path*>& paths)
 			int curr_location = paths[ag]->at(timestep).location;
 			if (prev_location != curr_location)
 			{
-				cat[prev_location].emplace_back(prev_timestep, timestep); // add vertex conflict
+				cat[prev_location].emplace_back(prev_timestep, timestep);							  // add vertex conflict
 				cat[getEdgeIndex(curr_location, prev_location)].emplace_back(timestep, timestep + 1); // add edge conflict
 				prev_location = curr_location;
 				prev_timestep = timestep;
@@ -60,21 +58,21 @@ void ReservationTable::buildCAT(int agent, const vector<Path*>& paths)
 int ReservationTable::getNumOfConflictsForStep(size_t curr_id, size_t next_id, size_t next_timestep) const
 {
 	int rst = 0;
-	const auto& it = cat.find(next_id);
+	const auto &it = cat.find(next_id);
 	if (it != cat.end())
 	{
-		for (const auto& constraint : it->second)
+		for (const auto &constraint : it->second)
 		{
-			if (constraint.first <= (int) next_timestep && (int) next_timestep < constraint.second)
+			if (constraint.first <= (int)next_timestep && (int)next_timestep < constraint.second)
 				rst++;
 		}
 	}
-	const auto& it2 = cat.find(getEdgeIndex(curr_id, next_id));
+	const auto &it2 = cat.find(getEdgeIndex(curr_id, next_id));
 	if (it2 != cat.end())
 	{
-		for (const auto& constraint : it2->second)
+		for (const auto &constraint : it2->second)
 		{
-			if (constraint.first <= (int) next_timestep && (int) next_timestep < constraint.second)
+			if (constraint.first <= (int)next_timestep && (int)next_timestep < constraint.second)
 				rst++;
 		}
 	}
@@ -92,7 +90,7 @@ void ReservationTable::insert2RT(size_t location, size_t t_min, size_t t_max)
 		{
 			sit[location].emplace_back(0, t_min, 0);
 		}
-		if ((int) t_max < latest_timestep)
+		if ((int)t_max < latest_timestep)
 		{
 			sit[location].emplace_back(t_max, latest_timestep, 0);
 		}
@@ -126,7 +124,6 @@ void ReservationTable::insert2RT(size_t location, size_t t_min, size_t t_max)
 		}
 	}
 }
-
 
 void ReservationTable::insertSoftConstraint2RT(size_t location, size_t t_min, size_t t_max)
 {
@@ -172,8 +169,7 @@ void ReservationTable::insertSoftConstraint2RT(size_t location, size_t t_min, si
 	}
 }
 
-
-//merge successive safe intervals with the same number of conflicts.
+// merge successive safe intervals with the same number of conflicts.
 /*void ReservationTable::mergeIntervals(list<Interval >& intervals) const
 {
 	if (intervals.empty())
@@ -194,8 +190,8 @@ void ReservationTable::insertSoftConstraint2RT(size_t location, size_t t_min, si
 			++curr;
 		}
 	}
-}*/ // we cannot merge intervals for goal locations separated by length_min
-
+}*/
+// we cannot merge intervals for goal locations separated by length_min
 
 // update SIT at the given location
 void ReservationTable::updateSIT(size_t location)
@@ -220,7 +216,7 @@ void ReservationTable::updateSIT(size_t location)
 		}
 
 		// negative constraints
-		const auto& it = ct.find(location);
+		const auto &it = ct.find(location);
 		if (it != ct.end())
 		{
 			for (auto time_range : it->second)
@@ -241,7 +237,7 @@ void ReservationTable::updateSIT(size_t location)
 		}
 
 		// soft constraints
-		const auto& it2 = cat.find(location);
+		const auto &it2 = cat.find(location);
 		if (it2 != cat.end())
 		{
 			for (auto time_range : it2->second)
@@ -278,7 +274,7 @@ list<Interval> ReservationTable::get_safe_intervals(size_t location, size_t lowe
 
 	updateSIT(location);
 
-	const auto& it = sit.find(location);
+	const auto &it = sit.find(location);
 
 	if (it == sit.end())
 	{
@@ -296,7 +292,6 @@ list<Interval> ReservationTable::get_safe_intervals(size_t location, size_t lowe
 		{
 			rst.emplace_back(interval);
 		}
-
 	}
 	return rst;
 }
@@ -327,7 +322,7 @@ list<Interval> ReservationTable::get_safe_intervals(size_t from, size_t to, size
 Interval ReservationTable::get_first_safe_interval(size_t location)
 {
 	updateSIT(location);
-	const auto& it = sit.find(location);
+	const auto &it = sit.find(location);
 	if (it == sit.end())
 		return Interval(0, min(length_max, MAX_TIMESTEP - 1) + 1, 0);
 	else
@@ -335,12 +330,12 @@ Interval ReservationTable::get_first_safe_interval(size_t location)
 }
 
 // find a safe interval with t_min as given
-bool ReservationTable::find_safe_interval(Interval& interval, size_t location, size_t t_min)
+bool ReservationTable::find_safe_interval(Interval &interval, size_t location, size_t t_min)
 {
 	if (t_min >= min(length_max, MAX_TIMESTEP - 1) + 1)
 		return false;
 	updateSIT(location);
-	const auto& it = sit.find(location);
+	const auto &it = sit.find(location);
 	if (it == sit.end())
 	{
 		interval = Interval(t_min, min(length_max, MAX_TIMESTEP - 1) + 1, 0);
@@ -348,24 +343,23 @@ bool ReservationTable::find_safe_interval(Interval& interval, size_t location, s
 	}
 	for (auto i : it->second)
 	{
-		if ((int) std::get<0>(i) <= t_min && t_min < (int) std::get<1>(i))
+		if ((int)std::get<0>(i) <= t_min && t_min < (int)std::get<1>(i))
 		{
 			interval = Interval(t_min, std::get<1>(i), std::get<2>(i));
 			return true;
 		}
-		else if (t_min < (int) std::get<0>(i))
+		else if (t_min < (int)std::get<0>(i))
 			break;
 	}
 	return false;
 }
 
-
 void ReservationTable::print() const
 {
-	for (const auto& entry : sit)
+	for (const auto &entry : sit)
 	{
 		cout << "loc=" << entry.first << ":";
-		for (const auto& interval : entry.second)
+		for (const auto &interval : entry.second)
 		{
 			cout << "[" << std::get<0>(interval) << "," << std::get<1>(interval) << "],";
 		}

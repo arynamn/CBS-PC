@@ -1,29 +1,28 @@
 #include "CBSHeuristic.h"
 #include "CBS.h"
 
-
-int WDGHeuristic::computeInformedHeuristicsValue(CBSNode& curr, double time_limit)
+int WDGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
 {
-  int h = -1;
-	int num_of_CGedges;
+	int h = -1;
+	// int num_of_CGedges;
 	vector<int> HG(num_of_agents * num_of_agents, 0); // heuristic graph
-  if (!buildWeightedDependenceGraph(curr, HG))
-    return false;
-  h = minimumWeightedVertexCover(HG);
-  return h;
+	if (!buildWeightedDependenceGraph(curr, HG))
+		return false;
+	h = minimumWeightedVertexCover(HG);
+	return h;
 }
 
-int WDGHeuristic::minimumWeightedVertexCover(const vector<int>& HG)
+int WDGHeuristic::minimumWeightedVertexCover(const vector<int> &HG)
 {
 	clock_t t = clock();
 	int rst = weightedVertexCover(HG);
-	runtime_solve_MVC += (double) (clock() - t) / CLOCKS_PER_SEC;
+	runtime_solve_MVC += (double)(clock() - t) / CLOCKS_PER_SEC;
 	return rst;
 }
 
-int WDGHeuristic::weightedVertexCover(const std::vector<int>& CG)
+int WDGHeuristic::weightedVertexCover(const std::vector<int> &CG)
 {
-int rst = 0;
+	int rst = 0;
 	std::vector<bool> done(num_of_agents, false);
 	for (int i = 0; i < num_of_agents; i++)
 	{
@@ -39,7 +38,8 @@ int rst = 0;
 		done[i] = true;
 		while (!Q.empty())
 		{
-			int j = Q.front(); Q.pop();
+			int j = Q.front();
+			Q.pop();
 			range.push_back(0);
 			indices.push_back(j);
 			for (int k = 0; k < num_of_agents; k++)
@@ -90,12 +90,12 @@ int rst = 0;
 			int best_so_far = MAX_COST;
 			rst += DPForWMVC(x, 0, 0, G, range, best_so_far);
 		}
-		double runtime = (double) (clock() - start_time) / CLOCKS_PER_SEC;
+		double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
 		if (runtime > time_limit)
 			return -1; // run out of time
 	}
 
-	//test
+	// test
 	/*std::vector<int> x(N, 0);
 	std::vector<int> range(N, 0);
 	for (int i = 0; i < N; i++)
@@ -114,9 +114,9 @@ int rst = 0;
 	return rst;
 }
 
-bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode& node, vector<int>& CG)
+bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG)
 {
-	for (const auto& conflict : node.conflicts)
+	for (const auto &conflict : node.conflicts)
 	{
 		int a1 = min(conflict->a1, conflict->a2);
 		int a2 = max(conflict->a1, conflict->a2);
@@ -165,7 +165,7 @@ bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode& node, vector<int>& CG)
 		}
 		if ((clock() - start_time) / CLOCKS_PER_SEC > time_limit) // run out of time
 		{
-			runtime_build_dependency_graph += (double) (clock() - start_time) / CLOCKS_PER_SEC;
+			runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
 			return false;
 		}
 	}
@@ -182,22 +182,20 @@ bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode& node, vector<int>& CG)
 			}
 		}
 	}
-	runtime_build_dependency_graph += (double) (clock() - start_time) / CLOCKS_PER_SEC;
+	runtime_build_dependency_graph += (double)(clock() - start_time) / CLOCKS_PER_SEC;
 	return true;
 }
 
-
 // recursive component of dynamic programming for weighted vertex cover
-int
-WDGHeuristic::DPForWMVC(std::vector<int>& x, int i, int sum, const std::vector<int>& CG, const std::vector<int>& range,
-						int& best_so_far)
+int WDGHeuristic::DPForWMVC(std::vector<int> &x, int i, int sum, const std::vector<int> &CG, const std::vector<int> &range,
+							int &best_so_far)
 {
 	if (sum >= best_so_far)
 		return MAX_COST;
-	double runtime = (double) (clock() - start_time) / CLOCKS_PER_SEC;
+	double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
 	if (runtime > time_limit)
 		return -1; // run out of time
-	else if (i == (int) x.size())
+	else if (i == (int)x.size())
 	{
 		best_so_far = sum;
 		return sum;
@@ -224,7 +222,6 @@ WDGHeuristic::DPForWMVC(std::vector<int>& x, int i, int sum, const std::vector<i
 		}
 	}
 
-
 	int best_cost = -1;
 	for (int cost = min_cost; cost <= range[i]; cost++)
 	{
@@ -244,17 +241,17 @@ WDGHeuristic::DPForWMVC(std::vector<int>& x, int i, int sum, const std::vector<i
 	return best_so_far;
 }
 
-int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode& node, bool cardinal)
+int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardinal)
 {
-	vector<SingleAgentSolver*> engines(2);
+	vector<SingleAgentSolver *> engines(2);
 	engines[0] = search_engines[a1];
 	engines[1] = search_engines[a2];
 	vector<Path> initial_paths(2);
 	initial_paths[0] = *paths[a1];
 	initial_paths[1] = *paths[a2];
 	vector<ConstraintTable> constraints{
-			ConstraintTable(initial_constraints[a1]),
-			ConstraintTable(initial_constraints[a2]) };
+		ConstraintTable(initial_constraints[a1]),
+		ConstraintTable(initial_constraints[a2])};
 	constraints[0].build(node, a1, search_engines[a1]->goal_location.size());
 	constraints[1].build(node, a2, search_engines[a2]->goal_location.size());
 	CBS cbs(engines, constraints, initial_paths, heuristics_type::CG, screen);
@@ -269,8 +266,8 @@ int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode& node, bool cardina
 	cbs.setNodeSelectionRule(node_selection_rule);
 	cbs.setNodeLimit(node_limit);
 
-	double runtime = (double) (clock() - start_time) / CLOCKS_PER_SEC;
-	int root_g = (int) initial_paths[0].size() - 1 + (int) initial_paths[1].size() - 1;
+	double runtime = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	int root_g = (int)initial_paths[0].size() - 1 + (int)initial_paths[1].size() - 1;
 	int lowerbound = root_g;
 	int upperbound = MAX_COST;
 	if (cardinal)
@@ -278,9 +275,9 @@ int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode& node, bool cardina
 	cbs.solve(time_limit - runtime, lowerbound, upperbound);
 	num_solve_2agent_problems++;
 	int rst;
-	if (cbs.runtime > time_limit - runtime || cbs.num_HL_expanded > node_limit) // time out or node out
-		rst = (int) cbs.min_f_val - root_g; // using lowerbound to approximate
-	else if (cbs.solution_cost < 0) // no solution
+	if (cbs.runtime > time_limit - runtime || (int)cbs.num_HL_expanded > node_limit) // time out or node out
+		rst = (int)cbs.min_f_val - root_g;										// using lowerbound to approximate
+	else if (cbs.solution_cost < 0)												// no solution
 		rst = MAX_COST;
 	else
 	{
