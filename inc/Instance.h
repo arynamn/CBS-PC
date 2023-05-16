@@ -1,30 +1,54 @@
 #pragma once
 
-#include"common.h"
+#include "common.h"
 
 typedef std::pair<int, int> event;
 
-// struct TemporalEdge{
-//   event source;
-//   event target;
-
-//   TemporalEdge(event source, event target): source(source), target(target) {};
-
-// };
-
 // Currently only works for undirected unweighted 4-neighbor grids
-class Instance 
+class Instance
 {
+protected:
+	// int moves_offset[MOVE_COUNT];
+	vector<bool> my_map;
+	string map_fname;
+	string agent_fname;
+
+	int num_of_agents;
+	vector<int> start_locations;
+	vector<vector<int>> goal_locations;
+
+	bool loadMap();
+	void printMap() const;
+	void saveMap() const;
+
+	virtual bool loadAgents();
+	virtual void saveAgents() const;
+
+	void generateConnectedRandomGrid(int rows, int cols, int obstacles); 	// initialize new [rows x cols] map with random obstacles
+	void generateRandomAgents(int warehouse_width);
+	bool addObstacle(int obstacle);		   									// add this obstacle only if the map is still connected
+	bool isConnected(int start, int goal); 									// run BFS to find a path between start and goal, return true if a path exists.
+
+	int randomWalk(int loc, int steps) const;
+
+	// Class SingleAgentSolver can access private members of Node
+	friend class SingleAgentSolver;
+
 public:
 	int num_of_cols;
 	int num_of_rows;
 	int map_size;
 
-	// enum valid_moves_t { NORTH, EAST, SOUTH, WEST, WAIT_MOVE, MOVE_COUNT };  // MOVE_COUNT is the enum's size
-
 	Instance() {}
-	Instance(const string& map_fname, const string& agent_fname,
-			 int num_of_agents = 0, int num_of_rows = 0, int num_of_cols = 0, int num_of_obstacles = 0, int warehouse_width = 0);
+	Instance(
+		const string &map_fname, 
+		const string &agent_fname,
+		int num_of_agents = 0, 
+		int num_of_rows = 0, 
+		int num_of_cols = 0, 
+		int num_of_obstacles = 0, 
+		int warehouse_width = 0
+	);
 
 	void printAgents() const;
 
@@ -48,7 +72,7 @@ public:
 		return abs(loc1_x - loc2_x) + abs(loc1_y - loc2_y);
 	}
 
-	inline int getManhattanDistance(const pair<int, int>& loc1, const pair<int, int>& loc2) const
+	inline int getManhattanDistance(const pair<int, int> &loc1, const pair<int, int> &loc2) const
 	{
 		return abs(loc1.first - loc2.first) + abs(loc1.second - loc2.second);
 	}
@@ -70,38 +94,9 @@ public:
 
 	int getDefaultNumberOfAgents() const { return num_of_agents; }
 
-  // should be moved to private
-  // vector<TemporalEdge> temporal_cons;
-  // temporal_cons[i * num_of_agents + j] = [{k, l}]
-  // The k-th task of i should happens before the l-th task of j
-  vector<vector<pair<int, int>> > temporal_cons;
-
-protected:
-	// int moves_offset[MOVE_COUNT];
-	vector<bool> my_map;
-	string map_fname;
-	string agent_fname;
-
-	int num_of_agents;
-	vector<int> start_locations;
-	vector<vector<int>> goal_locations;
-
-
-	bool loadMap();
-	void printMap() const;
-	void saveMap() const;
-
-	virtual bool loadAgents();
-	virtual void saveAgents() const;
-
-	void generateConnectedRandomGrid(int rows, int cols, int obstacles); // initialize new [rows x cols] map with random obstacles
-	void generateRandomAgents(int warehouse_width);
-	bool addObstacle(int obstacle); // add this obstacle only if the map is still connected
-	bool isConnected(int start, int goal); // run BFS to find a path between start and goal, return true if a path exists.
-
-	int randomWalk(int loc, int steps) const;
-
-	// Class  SingleAgentSolver can access private members of Node
-	friend class SingleAgentSolver;
+	// should be moved to private
+	// vector<TemporalEdge> temporal_cons;
+	// temporal_cons[i * num_of_agents + j] = [{k, l}]
+	// The k-th task of i should happens before the l-th task of j
+	vector<vector<pair<int, int>>> temporal_cons;
 };
-
