@@ -655,7 +655,7 @@ void CBS::printPaths() const
 	const Instance *instance = &search_engines[0]->instance;
 	for (int i = 0; i < num_of_agents; i++)
 	{
-		cout << "Agent " << i << " (" << paths_found_initially[i].size() - 1 << " -->" << paths[i]->size() - 1 << "): ";
+		cout << "Agent " << i << " (" << paths_found_initially[i].size() - 1 << " -->" << paths[i]->size() - 1 << "): \n";
 
 		for (int t = 0; t < (int)paths[i]->size(); t++)
 		{
@@ -664,13 +664,13 @@ void CBS::printPaths() const
 			{
 				cout << "*";
 			}
-			cout << "->";
+			cout << "\n";
 		}
 		cout << endl;
 		for (int j = 0; j < (int)paths[i]->timestamps.size(); j++)
 		{
 			cout << "(" << instance->getRowCoordinate(search_engines[i]->goal_location[j]) << ", " << instance->getColCoordinate(search_engines[i]->goal_location[j]) << ")@" << paths[i]->timestamps[j];
-			cout << "->";
+			cout << "\n";
 		}
 		cout << endl;
 	}
@@ -713,8 +713,8 @@ void CBS::printResults() const
 	else if (solution_cost == -3) // nodes out
 		cout << "Nodesout,";
 
-	cout << solution_cost << "," << runtime << "," << num_HL_expanded << "," << num_LL_expanded << "," << // HL_num_generated << "," << LL_num_generated << "," <<
-		min_f_val << "," << dummy_start->g_val << "," << dummy_start->g_val + dummy_start->h_val << "," << endl;
+	cout << "\t" << solution_cost << "\t" << runtime << "\t" << num_HL_expanded << "\t" << num_LL_expanded << "\t" << 
+		min_f_val << "\t" << dummy_start->g_val << "\t" << dummy_start->g_val + dummy_start->h_val << "\t" << endl;
 }
 
 void CBS::saveResults(const string &fileName, const string &instanceName) const

@@ -390,6 +390,8 @@ Path MultiLabelSpaceTimeAStar::findPathSegment(ConstraintTable &constraint_table
 
 Path MultiLabelSpaceTimeAStar::findPath(ConstraintTable &constraint_table, const pair<int, int> start_state, const pair<int, int> goal_state)
 {
+	Path temp;
+	return temp;
 	/*
 	  // generate start and add it to the OPEN & FOCAL list
 	  Path path;

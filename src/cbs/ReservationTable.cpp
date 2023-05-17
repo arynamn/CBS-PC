@@ -31,7 +31,7 @@ void ReservationTable::buildCAT(int agent, const vector<Path *> &paths)
 {
 	for (size_t ag = 0; ag < paths.size(); ag++)
 	{
-		if (ag == agent || paths[ag] == nullptr)
+		if ((int)ag == agent || paths[ag] == nullptr)
 			continue;
 		if (paths[ag]->size() == 1) // its start location is its goal location
 		{
@@ -199,7 +199,7 @@ void ReservationTable::updateSIT(size_t location)
 	if (sit.find(location) == sit.end())
 	{
 		// length constraints for the goal location
-		if (location == goal_location) // we need to divide the same intervals into 2 parts [0, length_min) and [length_min, length_max + 1)
+		if ((int)location == goal_location) // we need to divide the same intervals into 2 parts [0, length_min) and [length_min, length_max + 1)
 		{
 			int latest_timestep = min(length_max, MAX_TIMESTEP - 1) + 1;
 			if (length_min > length_max) // the location is blocked for the entire time horizon
@@ -250,7 +250,7 @@ void ReservationTable::updateSIT(size_t location)
 			while (curr != sit[location].end())
 			{
 				if (std::get<1>(*prev) == std::get<0>(*curr) && std::get<2>(*prev) == std::get<2>(*curr) &&
-					(location != goal_location || std::get<1>(*prev) != length_min))
+					((int)location != goal_location || (int)std::get<1>(*prev) != length_min))
 				{
 					*prev = make_tuple(std::get<0>(*prev), std::get<1>(*curr), std::get<2>(*prev));
 					curr = sit[location].erase(curr);
@@ -332,7 +332,7 @@ Interval ReservationTable::get_first_safe_interval(size_t location)
 // find a safe interval with t_min as given
 bool ReservationTable::find_safe_interval(Interval &interval, size_t location, size_t t_min)
 {
-	if (t_min >= min(length_max, MAX_TIMESTEP - 1) + 1)
+	if ((int)t_min >= min(length_max, MAX_TIMESTEP - 1) + 1)
 		return false;
 	updateSIT(location);
 	const auto &it = sit.find(location);
@@ -343,12 +343,12 @@ bool ReservationTable::find_safe_interval(Interval &interval, size_t location, s
 	}
 	for (auto i : it->second)
 	{
-		if ((int)std::get<0>(i) <= t_min && t_min < (int)std::get<1>(i))
+		if ((int)std::get<0>(i) <= (int)t_min && (int)t_min < (int)std::get<1>(i))
 		{
 			interval = Interval(t_min, std::get<1>(i), std::get<2>(i));
 			return true;
 		}
-		else if (t_min < (int)std::get<0>(i))
+		else if ((int)t_min < (int)std::get<0>(i))
 			break;
 	}
 	return false;
