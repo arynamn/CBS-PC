@@ -1,12 +1,12 @@
 #include "CBSHeuristic.h"
 #include "CBS.h"
 
-int WDGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
+int WDGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria)
 {
 	int h = -1;
 	// int num_of_CGedges;
 	vector<int> HG(num_of_agents * num_of_agents, 0); // heuristic graph
-	if (!buildWeightedDependenceGraph(curr, HG))
+	if (!buildWeightedDependenceGraph(curr, HG, opt_metric_criteria))
 		return false;
 	h = minimumWeightedVertexCover(HG);
 	return h;
@@ -114,7 +114,7 @@ int WDGHeuristic::weightedVertexCover(const std::vector<int> &CG)
 	return rst;
 }
 
-bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG)
+bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG, int opt_metric_criteria)
 {
 	for (const auto &conflict : node.conflicts)
 	{
@@ -131,7 +131,7 @@ bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG)
 		}
 		else if (rectangle_reasoning || mutex_reasoning)
 		{
-			node.conflictGraph[idx] = solve2Agents(a1, a2, node, false);
+			node.conflictGraph[idx] = solve2Agents(a1, a2, node, false, opt_metric_criteria);
 			assert(node.conflictGraph[idx] >= 0);
 			lookupTable[a1][a2][HTableEntry(a1, a2, &node)] = node.conflictGraph[idx];
 		}
@@ -144,7 +144,7 @@ bool WDGHeuristic::buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG)
 			}
 			if (cardinal) // run 2-agent solver only for dependent agents
 			{
-				node.conflictGraph[idx] = solve2Agents(a1, a2, node, cardinal);
+				node.conflictGraph[idx] = solve2Agents(a1, a2, node, cardinal, opt_metric_criteria);
 				assert(node.conflictGraph[idx] >= 1);
 			}
 			else
@@ -241,7 +241,7 @@ int WDGHeuristic::DPForWMVC(std::vector<int> &x, int i, int sum, const std::vect
 	return best_so_far;
 }
 
-int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardinal)
+int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardinal, int opt_metric_criteria)
 {
 	vector<SingleAgentSolver *> engines(2);
 	engines[0] = search_engines[a1];
@@ -254,7 +254,7 @@ int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardina
 		ConstraintTable(initial_constraints[a2])};
 	constraints[0].build(node, a1, search_engines[a1]->goal_location.size());
 	constraints[1].build(node, a2, search_engines[a2]->goal_location.size());
-	CBS cbs(engines, constraints, initial_paths, heuristics_type::CG, screen, 1);
+	CBS cbs(engines, constraints, initial_paths, heuristics_type::CG, screen, opt_metric_criteria);
 	cbs.setPrioritizeConflicts(PC);
 	cbs.setDisjointSplitting(disjoint_splitting);
 	cbs.setBypass(false); // I guess that bypassing does not help two-agent path finding???

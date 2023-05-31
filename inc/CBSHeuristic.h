@@ -164,7 +164,7 @@ public:
 	{}
 
 	virtual void copyConflictGraph(CBSNode &child, const CBSNode &parent);
-	bool computeInformedHeuristics(CBSNode &curr, double time_limit);
+	bool computeInformedHeuristics(CBSNode &curr, double time_limit, int opt_metric_criteria=1);
 	virtual void computeQuickHeuristics(CBSNode &curr); // this function is called when generating a CT node
 
 	virtual void init() {}
@@ -193,7 +193,7 @@ protected:
 	int minimumVertexCover(const vector<int> &CG);
 	virtual bool KVertexCover(const vector<int> &CG, int num_of_CGnodes, int num_of_CGedges, int k, int cols);
 	int ILPForWMVC(const vector<int> &CG, const vector<int> &node_max_value);
-	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit) = 0;
+	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria) = 0;
 };
 
 class ZeroHeuristic : public CBSHeuristic
@@ -218,7 +218,7 @@ public:
 	}
 
 protected:
-	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit);
+	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria);
 };
 
 class CGHeuristic : public CBSHeuristic
@@ -244,7 +244,7 @@ public:
 	}
 
 protected:
-	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit);
+	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria);
 	virtual int minimumVertexCover(const vector<int> &CG, int old_mvc, int cols, int num_of_edges);
 	virtual void buildCardinalConflictGraph(CBSNode &curr, vector<int> &CG, int &num_of_CGedges);
 	using CBSHeuristic::minimumVertexCover;
@@ -286,7 +286,7 @@ public:
 protected:
 	vector<vector<HTable>> lookupTable;
 
-	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit);
+	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria=1);
 	virtual bool buildDependenceGraph(CBSNode &node, vector<int> &CG, int &num_of_CGedges);
 	virtual bool SyncMDDs(const MDD &mdd1, const MDD &mdd2);
 	virtual bool dependent(int a1, int a2, CBSNode &node);
@@ -315,9 +315,9 @@ public:
 	}
 
 protected:
-	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit);
-	virtual bool buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG);
-	int solve2Agents(int a1, int a2, const CBSNode &node, bool cardinal);
+	virtual int computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria=1);
+	virtual bool buildWeightedDependenceGraph(CBSNode &node, vector<int> &CG, int opt_metric_criteria);
+	int solve2Agents(int a1, int a2, const CBSNode &node, bool cardinal, int opt_metric_criteria);
 	int DPForWMVC(vector<int> &x, int i, int sum, const vector<int> &CG, const vector<int> &range, int &best_so_far);
 	int minimumWeightedVertexCover(const vector<int> &CG);
 	int weightedVertexCover(const vector<int> &CG);

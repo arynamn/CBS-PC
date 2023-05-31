@@ -45,7 +45,7 @@ int CGHeuristic::minimumVertexCover(const std::vector<int> &CG, int old_mvc, int
 	return rst;
 }
 
-int CGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
+int CGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria)
 {
 
 	int h = -1;

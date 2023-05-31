@@ -1,6 +1,6 @@
 #include "CBSHeuristic.h"
 
-int DGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
+int DGHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria)
 {
 	int h = -1;
 	int num_of_CGedges;

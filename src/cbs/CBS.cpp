@@ -875,7 +875,7 @@ bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 		if (!curr->h_computed) // heuristics has not been computed yet
 		{
 			runtime = (double)(clock() - start) / CLOCKS_PER_SEC;
-			bool succ = heuristic_helper->computeInformedHeuristics(*curr, time_limit - runtime);
+			bool succ = heuristic_helper->computeInformedHeuristics(*curr, time_limit - runtime, this->opt_metric_criteria);
 			runtime = (double)(clock() - start) / CLOCKS_PER_SEC;
 			if (runtime > time_limit)
 			{ // timeout

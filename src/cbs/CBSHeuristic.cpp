@@ -1,17 +1,17 @@
 #include "CBSHeuristic.h"
 
-int ZeroHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit)
+int ZeroHeuristic::computeInformedHeuristicsValue(CBSNode &curr, double time_limit, int opt_metric_criteria)
 {
 	return 0;
 }
 
-bool CBSHeuristic::computeInformedHeuristics(CBSNode &curr, double time_limit)
+bool CBSHeuristic::computeInformedHeuristics(CBSNode &curr, double time_limit, int opt_metric_criteria)
 {
 	curr.h_computed = true;
 	start_time = clock();
 	this->time_limit = time_limit;
 
-	int h = computeInformedHeuristicsValue(curr, time_limit);
+	int h = computeInformedHeuristicsValue(curr, time_limit, opt_metric_criteria);
 	if (h < 0)
 		return false;
 
