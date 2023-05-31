@@ -254,7 +254,7 @@ int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardina
 		ConstraintTable(initial_constraints[a2])};
 	constraints[0].build(node, a1, search_engines[a1]->goal_location.size());
 	constraints[1].build(node, a2, search_engines[a2]->goal_location.size());
-	CBS cbs(engines, constraints, initial_paths, heuristics_type::CG, screen);
+	CBS cbs(engines, constraints, initial_paths, heuristics_type::CG, screen, 1);
 	cbs.setPrioritizeConflicts(PC);
 	cbs.setDisjointSplitting(disjoint_splitting);
 	cbs.setBypass(false); // I guess that bypassing does not help two-agent path finding???

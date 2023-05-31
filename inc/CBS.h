@@ -113,6 +113,7 @@ public:
 
 	vector<ConstraintTable> initial_constraints;
 
+	int opt_metric_criteria;
 	/*===========================================Set Parameteres===========================*/
 	void setBypass(bool b) 		{ bypass = b; } // 2-agent solver for heuristic calculation does not need bypass strategy.
 	void setNodeLimit(int n) 	{ node_limit = n; }
@@ -156,18 +157,21 @@ public:
 	}
 
 	/*===========================================Constructors================================*/
+	/* opt_metric = 1 for makespan and 2 for total_cost*/
 	CBS(
 		const Instance &instance, 
 		bool sipp, 
 		heuristics_type heuristic, 
-		int screen
+		int screen,
+		int opt_metric_criteria
 	);
 	CBS(
 		vector<SingleAgentSolver *> &search_engines,
 		const vector<ConstraintTable> &constraints,
 		vector<Path> &paths_found_initially, 
 		heuristics_type heuristic, 
-		int screen
+		int screen,
+		int opt_metric_criteria
 	);
 	virtual ~CBS();
 

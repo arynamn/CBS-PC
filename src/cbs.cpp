@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	// params for the input instance and experiment settings
 	("map,m", po::value<string>()->required(), "input file for map")
 	("agents,a", po::value<string>()->required(), "input file for agents")
+	("opt", po::value<int>()->required(), "optimization criteria")
 	("output,o", po::value<string>(), "output file for schedule")
 	("agentNum,k", po::value<int>()->default_value(0), "number of agents")
 	("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
 	("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances")
 
 	// params for CBS
-	("heuristics", po::value<string>()->default_value("CG"), "heuristics for the high-level search (Zero, CG,DG, WDG)")
+	("heuristics", po::value<string>()->default_value("Zero"), "heuristics for the high-level search (Zero, CG,DG, WDG)")
 	("conflictSelection", po::value<string>()->default_value("Random"),
 		"conflict selection (Random\n Earliest\n Conflicts: most conflicts with others\n MConstraints: most constraints\n "
 		"FConstraints: fewest constraints\n Width: thinnest MDDs\n Singletons: most singletons in MDDs)")
@@ -127,16 +128,21 @@ int main(int argc, char **argv)
 	srand((int)time(0));
 
 	/*=====================================Load the Instance=====================================*/
-	Instance instance(vm["map"].as<string>(), vm["agents"].as<string>(),
+	Instance instance(vm["map"].as<string>(), 
+					  vm["agents"].as<string>(),
 					  vm["agentNum"].as<int>(),
-					  vm["rows"].as<int>(), vm["cols"].as<int>(), vm["obs"].as<int>(), vm["warehouseWidth"].as<int>());
+					  vm["rows"].as<int>(), 
+					  vm["cols"].as<int>(), 
+					  vm["obs"].as<int>(), 
+					  vm["warehouseWidth"].as<int>());
 
 	srand(vm["seed"].as<int>());
 
 	int runs = vm["restart"].as<int>();
 
-	/*===================================initialize the solver===================================*/
-	CBS cbs(instance, false, h, vm["screen"].as<int>());
+	/*===================================Initialize the solver===================================*/
+	int opt_metric = vm["opt"].as<int>();
+	CBS cbs(instance, false, h, vm["screen"].as<int>(), opt_metric);
 	cbs.setDisjointSplitting(vm["disjointSplitting"].as<bool>());
 	cbs.setBypass(vm["bypass"].as<bool>());
 	cbs.setTargetReasoning(vm["targetReasoning"].as<bool>());
@@ -170,9 +176,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-/*
-Prints out usage help.
-*/
+/*===================================Prints out usage help.============================*/
 static void usage()
 {
 	// TODO: update the following information

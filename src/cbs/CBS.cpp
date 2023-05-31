@@ -479,9 +479,14 @@ bool CBS::findPathForSingleAgent(CBSNode *node, int ag, int lowerbound)
 	{
 		assert(!isSamePath(*paths[ag], new_path));
 		node->paths.emplace_back(ag, new_path);
-		node->g_val = node->g_val - (int)paths[ag]->size() + (int)new_path.size();
+		if(this->opt_metric_criteria == 1) {
+			node->g_val = max(node->g_val, (int)new_path.size() - 1);
+		} else {
+			node->g_val = node->g_val - (int)paths[ag]->size() + (int)new_path.size();
+		}
 		paths[ag] = &node->paths.back().second;
 		node->makespan = max(node->makespan, new_path.size() - 1);
+		node->total_cost = node->total_cost - (int)paths[ag]->size() + (int)new_path.size();
 
 		if (screen >= 2)
 		{
@@ -510,6 +515,7 @@ bool CBS::generateChild(CBSNode *node, CBSNode *parent)
 	node->parent = parent;
 	node->g_val = parent->g_val;
 	node->makespan = parent->makespan;
+	node->total_cost = parent->total_cost;
 	node->depth = parent->depth + 1;
 	int agent, x, y, t;
 	constraint_type type;
@@ -653,6 +659,7 @@ inline void CBS::pushNode(CBSNode *node)
 void CBS::printPaths() const
 {
 	const Instance *instance = &search_engines[0]->instance;
+	cout << "\n----------------------------------------------------------\n";
 	for (int i = 0; i < num_of_agents; i++)
 	{
 		cout << "Agent " << i << " (" << paths_found_initially[i].size() - 1 << " -->" << paths[i]->size() - 1 << "): \n";
@@ -664,16 +671,19 @@ void CBS::printPaths() const
 			{
 				cout << "*";
 			}
-			cout << "\n";
+			cout << "  ->  \t";
+			if((t+1) % 4 == 0)
+				cout << "\n";
 		}
-		cout << endl;
+		cout << "\n\n";
 		for (int j = 0; j < (int)paths[i]->timestamps.size(); j++)
 		{
 			cout << "(" << instance->getRowCoordinate(search_engines[i]->goal_location[j]) << ", " << instance->getColCoordinate(search_engines[i]->goal_location[j]) << ")@" << paths[i]->timestamps[j];
-			cout << "\n";
+			cout << "    --->   ";
 		}
-		cout << endl;
+		cout << "\n\n";
 	}
+	cout << "\n----------------------------------------------------------\n\n";
 }
 
 // adding new nodes to FOCAL (those with min-f-val*f_weight between the old and new LB)
@@ -809,6 +819,7 @@ string CBS::getSolverName() const
 
 bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 {
+	cout << " Optimization Type :: " << this->opt_metric_criteria << endl;
 	this->min_f_val = cost_lowerbound;
 	this->cost_upperbound = cost_upperbound;
 	this->time_limit = time_limit;
@@ -1081,7 +1092,8 @@ CBS::CBS(
 	const vector<ConstraintTable> &initial_constraints,
 	vector<Path> &paths_found_initially,
 	heuristics_type heuristic,
-	int screen
+	int screen,
+	int opt_metric_criteria
 ) : 
 	mdd_helper(initial_constraints, search_engines),
 	stp_helper(initial_constraints, search_engines),
@@ -1092,7 +1104,8 @@ CBS::CBS(
 	focal_w(1),
 	paths_found_initially(paths_found_initially),
 	search_engines(search_engines),
-	initial_constraints(initial_constraints)
+	initial_constraints(initial_constraints),
+	opt_metric_criteria(opt_metric_criteria)
 {
 	num_of_agents = (int)search_engines.size();
 	init_heuristic(heuristic);
@@ -1103,7 +1116,8 @@ CBS::CBS(
 	const Instance &instance, 
 	bool sipp, 
 	heuristics_type heuristic, 
-	int screen
+	int screen,
+	int opt_metric_criteria
 ) : 
 	mdd_helper(initial_constraints, search_engines),
 	stp_helper(initial_constraints, search_engines),
@@ -1112,7 +1126,8 @@ CBS::CBS(
 	mutex_helper(instance, initial_constraints),
 	screen(screen), 
 	focal_w(1),
-	num_of_agents(instance.getDefaultNumberOfAgents())
+	num_of_agents(instance.getDefaultNumberOfAgents()),
+	opt_metric_criteria(opt_metric_criteria)
 {
 	clock_t t = clock();
 	initial_constraints.resize(num_of_agents,
@@ -1208,7 +1223,12 @@ bool CBS::generateRoot()
 			}
 			paths[i] = &paths_found_initially[i];
 			dummy_start->makespan = max(dummy_start->makespan, paths_found_initially[i].size() - 1);
-			dummy_start->g_val += (int)paths_found_initially[i].size() - 1;
+			dummy_start->total_cost += (int)paths_found_initially[i].size() - 1;
+			if(this->opt_metric_criteria == 1) {
+				dummy_start->g_val = max(dummy_start->g_val, (int)paths_found_initially[i].size() - 1);
+			} else {
+				dummy_start->g_val += (int)paths_found_initially[i].size() - 1;
+			}
 			num_LL_expanded += search_engines[i]->num_expanded;
 			num_LL_generated += search_engines[i]->num_generated;
 		}
@@ -1219,7 +1239,12 @@ bool CBS::generateRoot()
 		{
 			paths[i] = &paths_found_initially[i];
 			dummy_start->makespan = max(dummy_start->makespan, paths_found_initially[i].size() - 1);
-			dummy_start->g_val += (int)paths_found_initially[i].size() - 1;
+			dummy_start->total_cost += (int)paths_found_initially[i].size() - 1;
+			if(this->opt_metric_criteria == 1) {
+				dummy_start->g_val = max(dummy_start->g_val, (int)paths_found_initially[i].size() - 1);
+			} else {
+				dummy_start->g_val += (int)paths_found_initially[i].size() - 1;
+			}
 		}
 	}
 

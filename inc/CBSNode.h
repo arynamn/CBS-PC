@@ -66,6 +66,7 @@ public:
 	int h_val;
 	int depth;			  							// depth of this CT node
 	size_t makespan = 0;  							// makespan over all paths
+	size_t total_cost = 0;
 	int tie_breaking = 0; 							// tie breaking for node selection
 	bool h_computed = false;
 
