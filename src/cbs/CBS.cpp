@@ -434,7 +434,7 @@ void CBS::removeLowPriorityConflicts(list<shared_ptr<Conflict>> &conflicts) cons
 {
 	if (conflicts.empty())
 		return;
-	unordered_map<int, shared_ptr<Conflict>> keep;
+	boost::unordered_map<int, shared_ptr<Conflict>> keep;
 	list<shared_ptr<Conflict>> to_delete;
 	for (const auto &conflict : conflicts)
 	{
@@ -594,7 +594,7 @@ bool CBS::generateChild(CBSNode *node, CBSNode *parent)
 	else if (type == constraint_type::LEQSTOP || type == constraint_type::GSTOP)
 	{
 		stp_helper.propagate(parent, node);
-		unordered_set<int> agents_need_replan;
+		boost::unordered_set<int> agents_need_replan;
 
 		for (auto con : node->constraints)
 		{
@@ -1155,10 +1155,6 @@ CBS::CBS(
 
 	mutex_helper.search_engines = search_engines;
 
-	if (screen >= 2) // print start and goals
-	{
-		instance.printAgents();
-	}
 }
 
 void CBS::init_heuristic(heuristics_type heuristic)

@@ -5,6 +5,10 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "CBS.h"
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 /* Declare some static utility functions */
 static void usage();
@@ -18,20 +22,15 @@ int main(int argc, char **argv)
 	desc.add_options()("help", "produce help message")
 
 	// params for the input instance and experiment settings
-	("map,m", po::value<string>()->required(), "input file for map")
-	("agents,a", po::value<string>()->required(), "input file for agents")
+	// ("map,m", po::value<string>()->required(), "input file for map")
+	// ("agents,a", po::value<string>()->required(), "input file for agents")
+	("config,c", po::value<string>()->required(), "input file for configuration")
 	("opt", po::value<int>()->required(), "optimization criteria")
 	("output,o", po::value<string>(), "output file for schedule")
 	("agentNum,k", po::value<int>()->default_value(0), "number of agents")
 	("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")
 	("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")
 	("seed,d", po::value<int>()->default_value(0), "random seed")
-
-	// params for instance generators
-	("rows", po::value<int>()->default_value(0), "number of rows")
-	("cols", po::value<int>()->default_value(0), "number of columns")
-	("obs", po::value<int>()->default_value(0), "number of obstacles")
-	("warehouseWidth", po::value<int>()->default_value(0), "width of working stations on both sides, for generating instances")
 
 	// params for CBS
 	("heuristics", po::value<string>()->default_value("Zero"), "heuristics for the high-level search (Zero, CG,DG, WDG)")
@@ -127,14 +126,47 @@ int main(int argc, char **argv)
 
 	srand((int)time(0));
 
+
+//-=-==-=-==-==-==-=-==-=--==-=-==-=-=-==-=-==-==-==-=-=-=--===-=-=-=-==--=--===-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-
+//							Read the data from json
+	// cout << "---" << vm["map"].as<string>() << endl;
+	// fflush(stdout);
+	// const string config_name = vm["map"].as<string>().c_str();
+	// cout << "---" << config_name << endl;
+	// fflush(stdout);
+	std::ifstream file("problem.json");
+	json data;
+    file >> data;
+
+	// Access the values in the JSON object
+    std::vector<std::vector<int>> worldDescriptor = data["world_descriptor"];
+    std::vector<std::vector<int>> start_locations = data["start_locations"];
+    std::vector<std::vector<std::vector<int>>> goal_locations = data["goal_locations"];
+    std::vector<std::vector<int>> temp_constraint = data["temp_constraints"];
+
+
+	// std::vector<std::vector<int>> worldDescriptor ;
+    // std::vector<std::vector<int>> start_locations;
+    // std::vector<std::vector<std::vector<int>>> goal_locations;
+    // std::vector<std::vector<int>> temp_constraint;
+
+    Instance instance(
+		worldDescriptor,
+		start_locations,
+		goal_locations,
+		temp_constraint,
+		2
+	);
+//-=-==-=-==-==-==-=-==-=--==-=-==-=-=-==-=-==-==-==-=-=-=--===-=-=-=-==--=--===-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-
+
 	/*=====================================Load the Instance=====================================*/
-	Instance instance(vm["map"].as<string>(), 
-					  vm["agents"].as<string>(),
-					  vm["agentNum"].as<int>(),
-					  vm["rows"].as<int>(), 
-					  vm["cols"].as<int>(), 
-					  vm["obs"].as<int>(), 
-					  vm["warehouseWidth"].as<int>());
+	// Instance instance(vm["map"].as<string>(), 
+	// 				  vm["agents"].as<string>(),
+	// 				  vm["agentNum"].as<int>(),
+	// 				  vm["rows"].as<int>(), 
+	// 				  vm["cols"].as<int>(), 
+	// 				  vm["obs"].as<int>(), 
+	// 				  vm["warehouseWidth"].as<int>());
 
 	srand(vm["seed"].as<int>());
 

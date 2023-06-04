@@ -90,7 +90,7 @@ private:
 	int lower_bound; // Threshold for FOCAL
 
 	// define typedef for hash_map
-	typedef unordered_set<MultiLabelAStarNode *, MultiLabelAStarNode::NodeHasher, MultiLabelAStarNode::eqnode> hashtable_t;
+	typedef boost::unordered_set<MultiLabelAStarNode *, MultiLabelAStarNode::NodeHasher, MultiLabelAStarNode::eqnode> hashtable_t;
 	hashtable_t allNodes_table;
 
 	// find path
