@@ -23,6 +23,7 @@ Instance::Instance(
 	std::vector<std::vector<int>> m_my_map,
 	std::vector<std::vector<int>> m_start_locations,
 	std::vector<std::vector<std::vector<int>>> m_goal_locations,
+	std::vector<std::vector<int>> deadlines,
 	std::vector<std::vector<int>> m_temp_constraints,
 	int screen
 ) {
@@ -55,20 +56,25 @@ Instance::Instance(
 		this->start_locations[i] = this->linearizeCoordinate(tmp[0], tmp[1]);
 		this->goals_count[i] = m_goal_locations[i].size();
 		this->goal_locations[i].resize(this->goals_count[i], 0);
-
+		if(m_goal_locations[i].size() != deadlines[i].size()) {
+			cout << m_goal_locations[i].size() << " " << deadlines[i].size() << endl;
+			cerr << "Deadlines Size does not match goals size\n";
+			exit(-1);
+		}
 		for(unsigned int j=0; j < m_goal_locations[i].size(); j++) {
 			auto tmp2 = m_goal_locations[i][j];
 			this->goal_locations[i][j] = this->linearizeCoordinate(tmp2[0], tmp2[1]);
 		}
 	}
 
+	this->deadlines = deadlines;
 	// ---------Load Temporal Constraints-----------------------
 	this->temporal_cons.resize(this->num_of_agents * this->num_of_agents);
 	for(auto tcons : m_temp_constraints) {
-		int from_id = this->linearizeCoordinate(tcons[0], tcons[1]);
-		int to_id 	= this->linearizeCoordinate(tcons[2], tcons[3]);
-		int from_landmark = tcons[4];
-		int to_landmark = tcons[5];
+		int from_id 		= tcons[0];
+		int from_landmark 	= tcons[1];
+		int to_id 			= tcons[2];
+		int to_landmark 	= tcons[3];
 		if(
 			from_landmark > goals_count[from_id] || 
 			to_landmark > goals_count[to_id]
@@ -81,7 +87,7 @@ Instance::Instance(
 
 
 	// ----------Print All Information--------------------------
-	if(screen > 1) {
+	if(screen >= 1) {
 		cout << "--------Print Map------------------\n";
 		for(unsigned int i=0; i<this->my_map.size(); i++) {
 			if(this->my_map[i])	cout << "#";

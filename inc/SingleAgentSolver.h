@@ -211,6 +211,8 @@ public:
 
 	int get_heuristic(int stage, int loc) const		// h to next goal and h from next goal to the last goal
 	{
+		if(stage >= (int)goal_location.size())
+			return 0;
 		return my_heuristic[stage][loc] + heuristic_landmark[stage];
 	}
 	int compute_heuristic(int from, int to) const 	// compute admissible heuristic between two locations
