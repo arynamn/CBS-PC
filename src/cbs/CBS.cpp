@@ -819,7 +819,6 @@ string CBS::getSolverName() const
 
 bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 {
-	cout << " Optimization Type :: " << this->opt_metric_criteria << endl;
 	this->min_f_val = cost_lowerbound;
 	this->cost_upperbound = cost_upperbound;
 	this->time_limit = time_limit;
@@ -1132,6 +1131,27 @@ CBS::CBS(
 	clock_t t = clock();
 	initial_constraints.resize(num_of_agents,
 							   ConstraintTable(instance.num_of_cols, instance.map_size));
+
+	// Add Custom Deadlines for the agents.
+	for(int agent_id=0; agent_id < this->num_of_agents; agent_id++) {
+		int num_of_goals = instance.goal_locations[agent_id].size();
+		initial_constraints[agent_id].leq_goal_time.resize(num_of_goals, INT_MAX);
+		for(int i=0; i<num_of_goals; i++) {
+			if(instance.deadlines[agent_id][i] > 0) {
+				initial_constraints[agent_id].leq_goal_time[i] = instance.deadlines[agent_id][i];
+			}
+		}
+	}
+	if(screen > 1) {
+		cout << "Deadlines :: \n";
+		for(int agent_id=0; agent_id < this->num_of_agents; agent_id++) {
+			int num_of_goals = instance.goal_locations[agent_id].size();
+			for(int i=0; i<num_of_goals; i++) {
+				cout << initial_constraints[agent_id].leq_goal_time[i] << " ";
+			}
+			cout << endl;
+		}
+	}
 
 	search_engines.resize(num_of_agents);
 	for (int i = 0; i < num_of_agents; i++)

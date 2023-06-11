@@ -35,7 +35,7 @@ struct TempConstraint
 // Currently only works for undirected unweighted 4-neighbor grids
 class Instance
 {
-protected:
+public:
 	// int moves_offset[MOVE_COUNT];
 	vector<bool> my_map;
 	string map_fname;
@@ -44,6 +44,7 @@ protected:
 	int num_of_agents;
 	vector<int> start_locations;
 	vector<vector<int>> goal_locations;
+	vector<vector<int>> deadlines;
 
 	bool loadMap();
 	void printMap() const;
@@ -62,7 +63,6 @@ protected:
 	// Class SingleAgentSolver can access private members of Node
 	friend class SingleAgentSolver;
 
-public:
 	int num_of_cols;
 	int num_of_rows;
 	int map_size;
@@ -83,6 +83,7 @@ public:
 		std::vector<std::vector<int>> m_my_map,
 		std::vector<std::vector<int>> m_start_locations,
 		std::vector<std::vector<std::vector<int>>> m_goal_locations,
+		std::vector<std::vector<int>> deadlines,
 		std::vector<std::vector<int>> m_temp_constraints,
 		int screen=0
 	);

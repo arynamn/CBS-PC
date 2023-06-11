@@ -22,8 +22,6 @@ int main(int argc, char **argv)
 	desc.add_options()("help", "produce help message")
 
 	// params for the input instance and experiment settings
-	// ("map,m", po::value<string>()->required(), "input file for map")
-	// ("agents,a", po::value<string>()->required(), "input file for agents")
 	("config,c", po::value<string>()->required(), "input file for configuration")
 	("opt", po::value<int>()->required(), "optimization criteria")
 	("output,o", po::value<string>(), "output file for schedule")
@@ -129,12 +127,7 @@ int main(int argc, char **argv)
 
 //-=-==-=-==-==-==-=-==-=--==-=-==-=-=-==-=-==-==-==-=-=-=--===-=-=-=-==--=--===-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-
 //							Read the data from json
-	// cout << "---" << vm["map"].as<string>() << endl;
-	// fflush(stdout);
-	// const string config_name = vm["map"].as<string>().c_str();
-	// cout << "---" << config_name << endl;
-	// fflush(stdout);
-	std::ifstream file("problem.json");
+	std::ifstream file(vm["config"].as<string>());
 	json data;
     file >> data;
 
@@ -142,31 +135,18 @@ int main(int argc, char **argv)
     std::vector<std::vector<int>> worldDescriptor = data["world_descriptor"];
     std::vector<std::vector<int>> start_locations = data["start_locations"];
     std::vector<std::vector<std::vector<int>>> goal_locations = data["goal_locations"];
+	std::vector<std::vector<int>> deadlines = data["deadlines"];
     std::vector<std::vector<int>> temp_constraint = data["temp_constraints"];
-
-
-	// std::vector<std::vector<int>> worldDescriptor ;
-    // std::vector<std::vector<int>> start_locations;
-    // std::vector<std::vector<std::vector<int>>> goal_locations;
-    // std::vector<std::vector<int>> temp_constraint;
 
     Instance instance(
 		worldDescriptor,
 		start_locations,
 		goal_locations,
+		deadlines,
 		temp_constraint,
-		2
+		vm["screen"].as<int>()
 	);
 //-=-==-=-==-==-==-=-==-=--==-=-==-=-=-==-=-==-==-==-=-=-=--===-=-=-=-==--=--===-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-
-
-	/*=====================================Load the Instance=====================================*/
-	// Instance instance(vm["map"].as<string>(), 
-	// 				  vm["agents"].as<string>(),
-	// 				  vm["agentNum"].as<int>(),
-	// 				  vm["rows"].as<int>(), 
-	// 				  vm["cols"].as<int>(), 
-	// 				  vm["obs"].as<int>(), 
-	// 				  vm["warehouseWidth"].as<int>());
 
 	srand(vm["seed"].as<int>());
 

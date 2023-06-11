@@ -111,7 +111,7 @@ Path MultiLabelSpaceTimeAStar::findShortestPath(ConstraintTable &constraint_tabl
 
 		// check if the popped node is a goal
 		if (curr->location == goal_location.back() &&  // arrive at the goal location
-			curr->stage == goal_location.size() - 1 && // reach all previous goals
+			curr->stage >= goal_location.size() && 	   // reach all previous goals
 			!curr->wait_at_goal &&					   // not wait at the goal location
 			curr->timestep >= holding_time)			   // the agent can hold the goal location afterward
 		{
@@ -123,19 +123,20 @@ Path MultiLabelSpaceTimeAStar::findShortestPath(ConstraintTable &constraint_tabl
 			continue;
 
 		list<int> next_locations = instance.getNeighbors(curr->location);
-		next_locations.emplace_back(curr->location);
+		next_locations.emplace_front(curr->location);	// So that staying in place is prioritized if not required
 		// generate child
 		for (int next_location : next_locations)
 		{
 			int next_timestep = curr->timestep + 1;
-			if (max(constraint_table.cat_size, constraint_table.latest_timestep) + 1 < curr->timestep)
-			{ // now everything is static, so switch to space A* where we always use the same timestep
-				if (next_location == curr->location)
-				{
-					continue;
-				}
-				next_timestep--;
-			}
+			// Disabled it as it interfered with selecting start location as first goal
+			// if (max(constraint_table.cat_size, constraint_table.latest_timestep) + 1 < curr->timestep)
+			// { // now everything is static, so switch to space A* where we always use the same timestep
+			// 	if (next_location == curr->location)
+			// 	{
+			// 		continue;
+			// 	}
+			// 	next_timestep--;
+			// }
 
 			if (constraint_table.constrained(next_location, next_timestep) ||
 				constraint_table.constrained(curr->location, next_location, next_timestep))
@@ -152,7 +153,7 @@ Path MultiLabelSpaceTimeAStar::findShortestPath(ConstraintTable &constraint_tabl
 			if (next_g_val + next_h_val > constraint_table.length_max || next_g_val + next_h_val > f_ub[stage])
 				continue;
 
-			if (next_location == (int)goal_location[stage] && stage < goal_location.size() - 1 && constraint_table.g_goal_time[stage] < curr->g_val + 1)
+			if (next_location == (int)goal_location[stage] && stage < goal_location.size() && constraint_table.g_goal_time[stage] < curr->g_val + 1)
 			{
 				stage += 1;
 				if (use_timestamps)
@@ -169,8 +170,11 @@ Path MultiLabelSpaceTimeAStar::findShortestPath(ConstraintTable &constraint_tabl
 												curr, next_timestep, stage, next_internal_conflicts, false);
 
 			next->timestamps = timestamps;
-			next->dist_to_next = my_heuristic[stage][next_location];
-
+			if(stage < goal_location.size()) {
+                next->dist_to_next = my_heuristic[stage][next_location];
+            } else {
+                next->dist_to_next = 0;
+            }
 			if (next->stage == goal_location.size() - 1 && next_location == goal_location.back() && curr->location == goal_location.back())
 			{
 				next->wait_at_goal = true;
