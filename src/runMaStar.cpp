@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 	po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    std::ifstream file("problem.json");
+    std::ifstream file(vm["config"].as<string>());
     json data = json::parse(file);
     file.close();
 
