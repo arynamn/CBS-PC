@@ -87,20 +87,24 @@ Instance::Instance(
 
 
 	// ----------Print All Information--------------------------
-	if(screen >= 1) {
-		cout << "--------Print Map------------------\n";
-		for(unsigned int i=0; i<this->my_map.size(); i++) {
-			if(this->my_map[i])	cout << "#";
-			else				cout << ".";
-			if( (i+1) % this->num_of_cols == 0 )
-				cout << "\n";
-		}
-
-		cout << "--------Print Agents and Goals-----\n";
+	if(screen > 0) {
+		// cout << "--------Print Map------------------\n";
+		// for(unsigned int i=0; i<this->my_map.size(); i++) {
+		// 	if(this->my_map[i])	cout << "#";
+		// 	else				cout << ".";
+		// 	if( (i+1) % this->num_of_cols == 0 )
+		// 		cout << "\n";
+		// }
+		cout << "------------------------------------\n";
+		cout << "--------Print Agents, Goals And Deadlines-----\n";
 		for(int i=0; i<this->num_of_agents; i++) {
-			cout << "Agent " << i << " : " << this->getCoordinate(this->start_locations[i]);  
+			cout << "Agent " << i << " : " << this->getCoordinate(this->start_locations[i]) << endl;  
 			for(unsigned int j=0; j<this->goal_locations[i].size(); j++) {
 				cout << " => " << this->getCoordinate(this->goal_locations[i][j]);
+				if(this->deadlines[i][j] != -1)
+					cout << ":" << this->deadlines[i][j];
+				if((j+1) % 5 == 0)
+					cout << endl;
 			}
 			cout << endl;
 		}
@@ -109,11 +113,13 @@ Instance::Instance(
 		for(int i=0; i<this->num_of_agents; i++) {
 			for(int j=0; j<this->num_of_agents; j++) {
 				int loc_id = i * this->num_of_agents + j;
-				cout << this->getCoordinate(i) << " - " << this->getCoordinate(j) << "  ::  ";
-				for(auto lm : this->temporal_cons[loc_id]) {
-					cout << lm << " :: ";
+				if(this->temporal_cons[loc_id].size() > 0) {
+					cout << this->getCoordinate(i) << " - " << this->getCoordinate(j) << "  ::  ";
+					for(auto lm : this->temporal_cons[loc_id]) {
+						cout << lm << " :: ";
+					}
+					cout << endl;
 				}
-				cout << endl;
 			}
 		}
 

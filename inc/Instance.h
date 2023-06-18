@@ -4,34 +4,6 @@
 
 typedef std::pair<int, int> event;
 
-#ifndef COMMON_INCLUDES_H
-#define COMMON_INCLUDES_H
-struct Cell
-{
-    int x;
-    int y;
-
-    Cell(int x=0, int y=0) : x(x), y(y) {}
-    bool operator<(const Cell &o) const {
-        return (this->x < o.x) || (this->x == o.x && this->y < o.y);
-    }
-};
-
-struct TempConstraint 
-{
-    Cell from_loc;
-    Cell to_loc;
-    int from_landmark;
-    int to_landmark;
-    TempConstraint(Cell m_from_loc, Cell m_to_loc, int m_from_lm, int m_to_lm) :
-        from_loc(m_from_loc),
-        to_loc(m_to_loc),
-        from_landmark(m_from_lm),
-        to_landmark(m_to_lm)
-    {}
-};
-#endif
-
 // Currently only works for undirected unweighted 4-neighbor grids
 class Instance
 {
