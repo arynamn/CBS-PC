@@ -272,7 +272,8 @@ int WDGHeuristic::solve2Agents(int a1, int a2, const CBSNode &node, bool cardina
 	int upperbound = MAX_COST;
 	if (cardinal)
 		lowerbound += 1;
-	cbs.solve(time_limit - runtime, lowerbound, upperbound);
+	ResultPaths temp;
+	cbs.solve(time_limit - runtime, temp, lowerbound, upperbound);
 	num_solve_2agent_problems++;
 	int rst;
 	if (cbs.runtime > time_limit - runtime || (int)cbs.num_HL_expanded > node_limit) // time out or node out

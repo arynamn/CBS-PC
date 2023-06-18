@@ -6,6 +6,12 @@
 #include "CorridorReasoning.h"
 #include "MutexReasoning.h"
 
+
+struct ResultPaths {
+	vector<vector<vector<int>>> paths;
+	int makespan;
+	int total_cost;
+};
 class CBS
 {
 protected:
@@ -113,6 +119,7 @@ public:
 
 	vector<ConstraintTable> initial_constraints;
 
+	// 1 for makespan, 2 for total_cost
 	int opt_metric_criteria;
 	/*===========================================Set Parameteres===========================*/
 	void setBypass(bool b) 		{ bypass = b; } // 2-agent solver for heuristic calculation does not need bypass strategy.
@@ -176,8 +183,10 @@ public:
 	virtual ~CBS();
 
 	/*==========Runs the algorithm until the problem is solved or time is exhausted=============*/
-	bool solve(double time_limit, int cost_lowerbound = 0, int cost_upperbound = MAX_COST);
+	bool solve(double time_limit, ResultPaths &res, int cost_lowerbound = 0, int cost_upperbound = MAX_COST);
 	void clearSearchEngines();
+
+	void parseSolution(ResultPaths &res);
 	
 	/*===========================================Save results================================*/
 	void saveResults(const string &fileName, const string &instanceName) const;

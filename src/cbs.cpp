@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	("output,o", po::value<string>(), "output file for schedule")
 	("agentNum,k", po::value<int>()->default_value(0), "number of agents")
 	("cutoffTime,t", po::value<double>()->default_value(7200), "cutoff time (seconds)")
-	("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")
+	("screen,s", po::value<int>()->default_value(0), "screen option (0: none; 1: results; 2:all)")
 	("seed,d", po::value<int>()->default_value(0), "random seed")
 
 	// params for CBS
@@ -170,10 +170,11 @@ int main(int argc, char **argv)
 	/*==============================RUN===========================================================*/
 	double runtime = 0;
 	int min_f_val = 0;
+	ResultPaths res;
 	for (int i = 0; i < runs; i++)
 	{
 		cbs.clear();
-		cbs.solve(vm["cutoffTime"].as<double>(), min_f_val);
+		cbs.solve(vm["cutoffTime"].as<double>(), res, min_f_val);
 		runtime += cbs.runtime;
 		if (cbs.solution_found)
 			break;
@@ -185,6 +186,16 @@ int main(int argc, char **argv)
 		cbs.saveResults(vm["output"].as<string>(), vm["agents"].as<string>());
 	cbs.clearSearchEngines();
 
+	cout << "\nTotal Cost : " << res.total_cost << endl;
+	cout << "Makespan : " << res.makespan << endl;
+	for(auto agent_path : res.paths) {
+		cout << "START :: ";
+		for(auto state : agent_path) {
+			cout << "[" << state[0] << ", " << state[1] << "] --> ";
+		}
+
+		cout << endl;
+	}
 	return 0;
 }
 

@@ -658,8 +658,8 @@ inline void CBS::pushNode(CBSNode *node)
 
 void CBS::printPaths() const
 {
-	const Instance *instance = &search_engines[0]->instance;
 	cout << "\n----------------------------------------------------------\n";
+	const Instance *instance = &search_engines[0]->instance;
 	for (int i = 0; i < num_of_agents; i++)
 	{
 		cout << "Agent " << i << " (" << paths_found_initially[i].size() - 1 << " -->" << paths[i]->size() - 1 << "): \n";
@@ -671,17 +671,11 @@ void CBS::printPaths() const
 			{
 				cout << "*";
 			}
-			cout << "  ->  \t";
-			if((t+1) % 4 == 0)
+			cout << "\t->\t";
+			if((t+1) % 5 == 0)
+		
 				cout << "\n";
 		}
-		cout << "\n\n";
-		for (int j = 0; j < (int)paths[i]->timestamps.size(); j++)
-		{
-			cout << "(" << instance->getRowCoordinate(search_engines[i]->goal_location[j]) << ", " << instance->getColCoordinate(search_engines[i]->goal_location[j]) << ")@" << paths[i]->timestamps[j];
-			cout << "    --->   ";
-		}
-		cout << "\n\n";
 	}
 	cout << "\n----------------------------------------------------------\n\n";
 }
@@ -724,7 +718,7 @@ void CBS::printResults() const
 		cout << "Nodesout,";
 
 	cout << "\t" << solution_cost << "\t" << runtime << "\t" << num_HL_expanded << "\t" << num_LL_expanded << "\t" << 
-		min_f_val << "\t" << dummy_start->g_val << "\t" << dummy_start->g_val + dummy_start->h_val << "\t" << endl;
+		min_f_val << "\t" << dummy_start->makespan << "\t" << dummy_start->total_cost << "\t" << endl;
 }
 
 void CBS::saveResults(const string &fileName, const string &instanceName) const
@@ -749,20 +743,21 @@ void CBS::saveResults(const string &fileName, const string &instanceName) const
 		addHeads.close();
 	}
 	ofstream stats(fileName, std::ios::app);
-	stats << runtime << "," << num_HL_expanded << "," << num_HL_generated << "," << num_LL_expanded << "," << num_LL_generated << "," <<
-
-		solution_cost << "," << min_f_val << "," << dummy_start->g_val << "," << dummy_start->g_val + dummy_start->h_val << "," <<
-
-		num_adopt_bypass << "," <<
-
-		num_standard_conflicts << "," << num_rectangle_conflicts << "," << num_corridor_conflicts << "," << num_target_conflicts << ","
-		  << num_mutex_conflicts << "," <<
-
-		heuristic_helper->num_merge_MDDs << "," << heuristic_helper->num_solve_2agent_problems << "," << heuristic_helper->num_memoization << "," << heuristic_helper->runtime_build_dependency_graph << "," << heuristic_helper->runtime_solve_MVC << "," <<
-
-		runtime_detect_conflicts << "," << rectangle_helper.accumulated_runtime << "," << corridor_helper.accumulated_runtime << "," << mutex_helper.accumulated_runtime << "," << mdd_helper.accumulated_runtime << "," << runtime_build_CT << "," << runtime_build_CAT << "," << runtime_path_finding << "," << runtime_generate_child << "," <<
-
-		runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
+	stats << runtime << "," << num_HL_expanded << "," << num_HL_generated 
+		<< "," << num_LL_expanded << "," << num_LL_generated << "," 
+		<< solution_cost << "," << min_f_val << "," << dummy_start->g_val 
+		<< "," << dummy_start->g_val + dummy_start->h_val << "," 
+		<< num_adopt_bypass << "," << num_standard_conflicts << "," 
+		<< num_rectangle_conflicts << "," << num_corridor_conflicts 
+		<< "," << num_target_conflicts << "," << num_mutex_conflicts << "," 
+		<< heuristic_helper->num_merge_MDDs << "," << heuristic_helper->num_solve_2agent_problems << "," 
+		<< heuristic_helper->num_memoization << "," << heuristic_helper->runtime_build_dependency_graph << "," 
+		<< heuristic_helper->runtime_solve_MVC << "," << runtime_detect_conflicts << "," 
+		<< rectangle_helper.accumulated_runtime << "," << corridor_helper.accumulated_runtime 
+		<< "," << mutex_helper.accumulated_runtime << "," << mdd_helper.accumulated_runtime << "," 
+		<< runtime_build_CT << "," << runtime_build_CAT << "," 
+		<< runtime_path_finding << "," << runtime_generate_child << "," 
+		<< runtime_preprocessing << "," << getSolverName() << "," << instanceName << endl;
 	stats.close();
 }
 
@@ -817,13 +812,13 @@ string CBS::getSolverName() const
 	return name;
 }
 
-bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
+bool CBS::solve(double time_limit, ResultPaths &res, int cost_lowerbound, int cost_upperbound)
 {
 	this->min_f_val = cost_lowerbound;
 	this->cost_upperbound = cost_upperbound;
 	this->time_limit = time_limit;
 
-	if (screen > 0) // 1 or 2
+	if (screen > 0)
 	{
 		string name = getSolverName();
 		name.resize(35, ' ');
@@ -857,8 +852,7 @@ bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 		updatePaths(curr);
 
 		if (screen > 1)
-			cout << endl
-				 << "Pop " << *curr << endl;
+			cout << endl << "Pop " << *curr << endl;
 
 		if (curr->unknownConf.size() + curr->conflicts.size() == 0) // no conflicts
 		{															// found a solution (and finish the while look)
@@ -960,8 +954,7 @@ bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 			}
 
 			if (screen > 1)
-				cout << "	Expand " << *curr << endl
-					 << "	on " << *(curr->conflict) << endl;
+				cout << "	Expand " << *curr << "	on " << *(curr->conflict) << endl;
 
 			bool solved[2] = {false, false};
 			vector<Path *> copy(paths);
@@ -1068,22 +1061,44 @@ bool CBS::solve(double time_limit, int cost_lowerbound, int cost_upperbound)
 	} // end of while loop
 
 	runtime = (double)(clock() - start) / CLOCKS_PER_SEC;
+	this->parseSolution(res);
 	if (solution_found && !validateSolution())
 	{
-		cout << "Solution invalid!!!" << endl;
-		printPaths();
-		exit(-1);
+		return false;
 	}
-
-	if (screen > 0)
-	{ // 1 or 2
-		printResults();
-		if (solution_found)
-		{
-			printPaths();
-		}
-	}
+	// if (screen > 1)
+	// {
+	// 	this->printResults();
+	// 	if (solution_found)
+	// 	{
+	// 		this->printPaths();
+	// 	}
+	// }
 	return solution_found;
+}
+
+void CBS::parseSolution(ResultPaths &res) 
+{
+	
+	const Instance  *instance = &search_engines[0]->instance;
+	res.paths.clear();
+	res.makespan = 0;
+	res.total_cost = 0;
+	for (int i = 0; i < num_of_agents; i++)
+	{
+		res.total_cost += paths[i]->size() - 1;
+		res.makespan = std::max(res.makespan, (int)paths[i]->size() - 1);
+
+		vector<vector<int>> curr_path;
+		for (int t = 0; t < (int)paths[i]->size(); t++)
+		{
+			curr_path.push_back( {
+				instance->getRowCoordinate(paths[i]->at(t).location),
+				instance->getColCoordinate(paths[i]->at(t).location)
+			});
+		}
+		res.paths.push_back(curr_path);
+	}
 }
 
 CBS::CBS(
